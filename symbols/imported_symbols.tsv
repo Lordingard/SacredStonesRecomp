@@ -1,0 +1,7 @@
+# GBARecomp imported seed symbols.
+# Format:
+# 0xADDR<TAB>mode<TAB>name
+#
+# mode is "arm" or "thumb".
+# Keep this file reviewed and ROM-free. Generate candidates with:
+#   pwsh scripts/import-fireemblem8u-symbols.ps1 -ElfPath <path-to-fireemblem8.elf>

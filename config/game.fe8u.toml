@@ -1,0 +1,13 @@
+# Fire Emblem: The Sacred Stones (U) [!]
+# This config is intentionally minimal for the first static-generation pass.
+# Symbol and range annotations should be added only after review.
+
+[program]
+name = "Fire Emblem: The Sacred Stones (U)"
+id = "fe8u"
+load_address = 0x08000000
+size = 0x01000000
+entry_pc = 0x08000000
+
+[identity]
+sha1 = "c25b145e37456171ada4b0d440bf88a19f4d509f"

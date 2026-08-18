@@ -1,0 +1,41 @@
+# Local ROMs and BIOS dumps
+*.gba
+*.GBA
+*.bin
+*.BIN
+*.sav
+*.srm
+
+# GBARecomp generated output. Generated C++ is ROM-derived and must stay local.
+/.generated/
+/generated/
+/framework/
+/gbarecomp-project.json
+
+# Build outputs
+/build/
+/out/
+/dist/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*.lib
+*.obj
+*.pdb
+*.ilk
+*.exe
+*.dll
+
+# Local dependency checkouts and machine-specific config
+/extern/
+/third_party/
+/config/project.local.ps1
+
+# Editor and OS noise
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+Thumbs.db
+Desktop.ini
