@@ -1,5 +1,17 @@
 # Release Notes
 
+## v0.1.2-preview - Proposed
+
+Second hotfix for the Windows preview build.
+
+### Fixed
+
+- The launcher now receives the executable-local launch context before it opens.
+  This keeps launcher state, ROM cache, save path derivation, and `game.toml`
+  lookup anchored to the extracted release folder.
+- `game.toml` is explicitly exposed to the launcher through `launcher_game_config`.
+- `--config <exe>/game.toml` and `--bios-hle` are applied both before and after
+  the launcher step so the interactive launch path matches headless tests.
 ## v0.1.1-preview - Proposed
 
 Hotfix for the first Windows preview build.

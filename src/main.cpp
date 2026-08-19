@@ -74,11 +74,16 @@ int main(int argc, char** argv) {
     opts.save_state_slot_count = 9;
     opts.rewind_history_seconds = 30;
     opts.launcher_region = "USA";
+    opts.launcher_game_config = "game.toml";
     opts.launcher_config_filename = "sacredstonesrecomp.ini";
     opts.launcher_rom_cache_filename = "sacredstonesrecomp-rom.cfg";
     opts.launcher_bios_cache_filename = "sacredstonesrecomp-bios.cfg";
 
     std::vector<std::string> args(argv, argv + argc);
+    if (!args.empty()) args[0] = executable_path(args).string();
+
+    force_exe_local_config(args);
+    force_bios_hle_default(args);
 
 #if defined(RECOMP_LAUNCHER)
     if (gbarecomp_launcher_preboot(args, opts)) return 0;
