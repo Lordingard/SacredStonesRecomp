@@ -1,6 +1,5 @@
 # Fire Emblem: The Sacred Stones (U) [!]
-# This config is intentionally minimal for the first static-generation pass.
-# Symbol and range annotations should be added only after review.
+# Reviewed annotations for GBARecomp static generation.
 
 [program]
 name = "Fire Emblem: The Sacred Stones (U)"
@@ -11,3 +10,429 @@ entry_pc = 0x08000000
 
 [identity]
 sha1 = "c25b145e37456171ada4b0d440bf88a19f4d509f"
+
+[[code_copy]]
+runtime_start = 0x03002B08
+source_start = 0x080D16E4
+size = 0x40
+name = "read_sram_fast_iwram"
+note = "SetSramFastFunc copies ReadSramFast_Core into readSramFast_Work."
+
+[[extra_func]]
+addr = 0x03002B08
+source_addr = 0x080D16E4
+mode = "thumb"
+name = "ReadSramFast_IWRAM"
+note = "Runtime entry reached through ReadSramFast function pointer."
+
+[[code_copy]]
+runtime_start = 0x03002A68
+source_start = 0x080D1764
+size = 0x4C
+name = "verify_sram_fast_iwram"
+note = "SetSramFastFunc copies VerifySramFast_Core into verifySramFast_Work."
+
+[[extra_func]]
+addr = 0x03002A68
+source_addr = 0x080D1764
+mode = "thumb"
+name = "VerifySramFast_IWRAM"
+note = "Runtime entry reached through VerifySramFast function pointer."
+
+[[code_copy]]
+runtime_start = 0x03002C60
+source_start = 0x080CF54C
+size = 0x400
+name = "sound_main_ram"
+note = "m4aSoundInit copies SoundMainRAM into SoundMainRAM_Buffer."
+
+[[extra_func]]
+addr = 0x03002C60
+source_addr = 0x080CF54C
+mode = "thumb"
+name = "SoundMainRAM_IWRAM"
+note = "Runtime entry reached through SoundMainRAM_Buffer + 1."
+
+[[code_copy]]
+runtime_start = 0x03004160
+source_start = 0x080000FC
+size = 0x800
+name = "irq_main_iwram"
+note = "StoreIRQToIRAM copies IrqMain into IntrMain_Buffer."
+
+[[extra_func]]
+addr = 0x03004160
+source_addr = 0x080000FC
+mode = "arm"
+name = "IrqMain_IWRAM"
+note = "Runtime IRQ vector entry in IntrMain_Buffer."
+
+[[extra_func]]
+addr = 0x0300425C
+source_addr = 0x080001F8
+mode = "arm"
+resume = true
+name = "IrqMain_PostIRQ_IWRAM"
+note = "Observed IRQ return/resume inside copied IrqMain."
+
+[[code_copy]]
+runtime_start = 0x03003750
+source_start = 0x08000228
+size = 0x7F8
+name = "arm_code_to_copy_iwram"
+note = "StoreRoutinesToIRAM copies ARMCodeToCopy_Start..End into gUnknown_03003750."
+
+[[extra_func]]
+addr = 0x0300375C
+source_addr = 0x08000234
+mode = "arm"
+name = "ColorFadeTick_IWRAM"
+note = "Copied ARMCodeToCopy function."
+
+[[extra_func]]
+addr = 0x030039BC
+source_addr = 0x08000494
+mode = "arm"
+name = "PutOamHi_IWRAM"
+note = "Copied ARMCodeToCopy function pointer target."
+
+[[extra_func]]
+addr = 0x03003A5C
+source_addr = 0x08000534
+mode = "arm"
+name = "PutOamLo_IWRAM"
+note = "Copied ARMCodeToCopy function pointer target."
+
+[[extra_func]]
+addr = 0x03003A8C
+source_addr = 0x08000564
+mode = "arm"
+name = "DrawGlyph_IWRAM"
+note = "Copied ARMCodeToCopy function pointer target."
+
+[[extra_func]]
+addr = 0x03003C0C
+source_addr = 0x080006E4
+mode = "arm"
+name = "DecodeString_IWRAM"
+note = "Copied ARMCodeToCopy function pointer target."
+
+[[extra_func]]
+addr = 0x03003CAC
+source_addr = 0x08000784
+mode = "arm"
+name = "MapFloodCoreStep_IWRAM"
+note = "Copied ARMCodeToCopy function pointer target."
+
+[[extra_func]]
+addr = 0x03003D9C
+source_addr = 0x08000874
+mode = "arm"
+name = "MapFloodCore_IWRAM"
+note = "Copied ARMCodeToCopy function pointer target."
+
+[[extra_func]]
+addr = 0x03003E0C
+source_addr = 0x080008E4
+mode = "arm"
+resume = true
+name = "MapFloodCore_Case4_IWRAM"
+note = "Observed copied ARMCodeToCopy dispatch target inside MapFloodCore."
+
+[[extra_func]]
+addr = 0x080030F4
+mode = "thumb"
+note = "Observed runtime dispatch target during early boot."
+
+[[extra_func]]
+addr = 0x08003104
+mode = "thumb"
+note = "Observed runtime dispatch target during early boot."
+
+[[extra_func]]
+addr = 0x0800317C
+mode = "thumb"
+note = "Observed runtime dispatch target during early boot."
+
+[[extra_func]]
+addr = 0x080031C4
+mode = "thumb"
+note = "Observed runtime dispatch target during early boot."
+
+[[extra_func]]
+addr = 0x080031D2
+mode = "thumb"
+note = "Observed runtime dispatch target during early boot."
+
+[[extra_func]]
+addr = 0x08003260
+mode = "thumb"
+note = "Observed runtime dispatch target during early boot."
+
+[[extra_func]]
+addr = 0x080032AC
+mode = "thumb"
+name = "ProcCmd_SLEEP"
+note = "Observed proc command dispatch target during early boot."
+
+[[extra_func]]
+addr = 0x080032D4
+mode = "thumb"
+note = "Observed runtime dispatch target during early boot."
+
+[[extra_func]]
+addr = 0x08003370
+mode = "thumb"
+note = "Observed runtime dispatch target during early boot."
+
+[[extra_func]]
+addr = 0x08002788
+mode = "thumb"
+name = "MusicVc_OnLoop"
+note = "Observed proc loop callback during windowed boot."
+[[extra_func]]
+addr = 0x080030E8
+mode = "thumb"
+name = "ProcCmd_DELETE"
+note = "Observed proc command dispatch target during windowed boot."
+[[extra_func]]
+addr = 0x08003130
+mode = "thumb"
+name = "ProcCmd_CALL_ROUTINE_ARG"
+note = "Observed proc command dispatch target during windowed boot."
+[[extra_func]]
+addr = 0x08003146
+mode = "thumb"
+resume = true
+name = "ProcCmd_CALL_ROUTINE_ARG_Return"
+note = "Observed resume point after proc routine callback."
+[[extra_func]]
+addr = 0x08003150
+mode = "thumb"
+name = "ProcCmd_WHILE_ROUTINE"
+note = "Observed proc command dispatch target during windowed boot."
+[[extra_func]]
+addr = 0x0800318C
+mode = "thumb"
+name = "ProcCmd_SET_DESTRUCTOR"
+note = "Observed proc command dispatch target during windowed boot."
+[[extra_func]]
+addr = 0x080031A8
+mode = "thumb"
+name = "ProcCmd_NEW_CHILD"
+note = "Observed proc command dispatch target during windowed boot."
+[[extra_func]]
+addr = 0x080031B6
+mode = "thumb"
+resume = true
+name = "ProcCmd_NEW_CHILD_AfterStart"
+note = "Observed resume point after Proc_Start callback."
+[[extra_func]]
+addr = 0x0800327C
+mode = "thumb"
+name = "ProcCmd_GOTO"
+note = "Observed proc command dispatch target during windowed boot."
+
+[[extra_func]]
+addr = 0x03003E10
+source_addr = 0x080008E8
+mode = "arm"
+name = "ARMCodeToCopy_080008E8_IWRAM"
+note = "Observed runtime dispatch target inside copied ARMCodeToCopy block during gameplay."
+[[extra_func]]
+addr = 0x08003118
+mode = "thumb"
+name = "ProcCmd_CALL_ROUTINE_2"
+note = "Observed proc command dispatch target during gameplay."
+[[extra_func]]
+addr = 0x08003126
+mode = "thumb"
+resume = true
+name = "ProcCmd_CALL_ROUTINE_2_Return"
+note = "Observed resume point after proc routine callback."
+[[extra_func]]
+addr = 0x08003200
+mode = "thumb"
+name = "ProcCmd_WHILE_EXISTS"
+note = "Observed hot proc command dispatch target during gameplay."
+[[extra_func]]
+addr = 0x08003228
+mode = "thumb"
+name = "ProcCmd_END_ALL"
+note = "Observed proc command dispatch target during gameplay."
+[[extra_func]]
+addr = 0x0800326C
+mode = "thumb"
+name = "ProcCmd_JUMP"
+note = "Observed proc command dispatch target during gameplay."
+[[extra_func]]
+addr = 0x080032F4
+mode = "thumb"
+name = "ProcCmd_BLOCK"
+note = "Observed very hot proc command dispatch target during gameplay."
+[[extra_func]]
+addr = 0x080032F8
+mode = "thumb"
+name = "ProcCmd_END_IF_DUPLICATE"
+note = "Observed proc command dispatch target during gameplay."
+[[extra_func]]
+addr = 0x08003338
+mode = "thumb"
+name = "ProcCmd_END_DUPLICATES"
+note = "Observed proc command dispatch target during gameplay."
+[[extra_func]]
+addr = 0x0803005C
+mode = "thumb"
+name = "BMapVSync_UpdateMapImgAnimations"
+note = "Observed hot map VSync routine during gameplay."
+[[extra_func]]
+addr = 0x08030088
+mode = "thumb"
+resume = true
+name = "BMapVSync_UpdateMapImgAnimations_Return"
+note = "Observed resume point inside hot map VSync routine."
+[[extra_func]]
+addr = 0x080300A4
+mode = "thumb"
+name = "BMapVSync_UpdateMapPalAnimations"
+note = "Observed hot map VSync routine during gameplay."
+[[extra_func]]
+addr = 0x08030138
+mode = "thumb"
+name = "BMapVSync_OnEnd"
+note = "Observed map VSync proc callback during gameplay."
+[[extra_func]]
+addr = 0x08030144
+mode = "thumb"
+name = "BMapVSync_OnLoop"
+note = "Observed hot map VSync proc callback during gameplay."
+[[extra_func]]
+addr = 0x0803014C
+mode = "thumb"
+resume = true
+name = "BMapVSync_OnLoop_Return"
+note = "Observed resume point inside hot map VSync proc callback."
+[[extra_func]]
+addr = 0x08030BA4
+mode = "thumb"
+name = "WfxVSync"
+note = "Observed world/map effect VSync routine during gameplay."
+[[extra_func]]
+addr = 0x08030C0C
+mode = "thumb"
+name = "WfxUpdate"
+note = "Observed world/map effect update routine during gameplay."
+[[extra_func]]
+addr = 0x080396AC
+mode = "thumb"
+name = "AiPhaseInit"
+note = "Observed AI phase routine during gameplay."
+[[extra_func]]
+addr = 0x08039718
+mode = "thumb"
+name = "AiPhaseBerserkInit"
+note = "Observed AI phase routine during gameplay."
+[[extra_func]]
+addr = 0x08039762
+mode = "thumb"
+resume = true
+name = "AiPhaseBerserkInit_Return"
+note = "Observed resume point inside AI phase routine."
+[[extra_func]]
+addr = 0x08039778
+mode = "thumb"
+name = "AiPhaseCleanup"
+note = "Observed AI phase cleanup routine during gameplay."
+[[extra_func]]
+addr = 0x08039788
+mode = "thumb"
+name = "CpOrderMain"
+note = "Observed AI order routine during gameplay."
+[[extra_func]]
+addr = 0x08039ABC
+mode = "thumb"
+name = "CpOrderFunc_End"
+note = "Observed AI order dispatch target during gameplay."
+[[extra_func]]
+addr = 0x08039AC8
+mode = "thumb"
+name = "CpDecide_Suspend"
+note = "Observed AI order dispatch target during gameplay."
+[[extra_func]]
+addr = 0x08039B00
+mode = "thumb"
+name = "CpDecide_Main"
+note = "Observed AI order dispatch target during gameplay."
+
+[[extra_func]]
+addr = 0x03003E04
+source_addr = 0x080008DC
+mode = "arm"
+resume = true
+name = "MapFloodCore_Case2_IWRAM"
+note = "Observed copied ARMCodeToCopy dispatch target inside MapFloodCore during AI map refresh."
+
+[[extra_func]]
+addr = 0x03003E08
+source_addr = 0x080008E0
+mode = "arm"
+resume = true
+name = "MapFloodCore_Case3_IWRAM"
+note = "Observed copied ARMCodeToCopy dispatch target inside MapFloodCore during AI map refresh."
+
+[[extra_func]]
+addr = 0x080397B0
+mode = "thumb"
+name = "CpOrderBerserkInit"
+note = "Observed AI order dispatch target after skipping map intro dialogue."
+
+[[extra_func]]
+addr = 0x08039858
+mode = "thumb"
+name = "CpOrderFunc_BeginDecide"
+note = "Observed AI order dispatch target after skipping map intro dialogue."
+
+[[extra_func]]
+addr = 0x08039D10
+mode = "thumb"
+name = "DecideHealOrEscape"
+note = "Observed AI decide function pointer target after skipping map intro dialogue."
+
+[[extra_func]]
+addr = 0x08039DC4
+mode = "thumb"
+name = "DecideSpecialItems"
+note = "Observed AI decide function pointer target after skipping map intro dialogue."
+
+[[extra_func]]
+addr = 0x08039DE0
+mode = "thumb"
+name = "DecideScriptA"
+note = "Observed AI decide function pointer target after skipping map intro dialogue."
+
+[[extra_func]]
+addr = 0x08039E2C
+mode = "thumb"
+name = "DecideScriptB"
+note = "Observed AI decide function pointer target after skipping map intro dialogue."
+
+[[extra_func]]
+addr = 0x0800046C
+mode = "arm"
+resume = true
+name = "TmApplyTsa_InternalResume"
+note = "Observed internal resume point during skipped map intro transition."
+
+[[extra_func]]
+addr = 0x08019FB2
+mode = "thumb"
+resume = true
+name = "UpdateBmMapDisplay_InternalResume"
+note = "Observed internal resume point during skipped map intro transition."
+
+[[extra_func]]
+addr = 0x0802737E
+mode = "thumb"
+resume = true
+name = "AddUnitSprite_InternalResume"
+note = "Observed internal resume point during skipped map intro transition."

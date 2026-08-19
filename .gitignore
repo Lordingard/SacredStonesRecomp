@@ -5,6 +5,8 @@
 *.BIN
 *.sav
 *.srm
+*.state*
+*.ss*
 
 # GBARecomp generated output. Generated C++ is ROM-derived and must stay local.
 /.generated/
@@ -27,9 +29,19 @@ cmake_install.cmake
 *.dll
 
 # Local dependency checkouts and machine-specific config
-/extern/
+/extern/*
+!/extern/recomp-ui/
 /third_party/
 /config/project.local.ps1
+
+# Runtime user configuration
+/keybinds.ini
+/sacredstonesrecomp.ini
+/sacredstonesrecomp-rom.cfg
+/sacredstonesrecomp-bios.cfg
+/rom.cfg
+/bios.cfg
+/saves/
 
 # Editor and OS noise
 .vs/
@@ -39,3 +51,10 @@ cmake_install.cmake
 *.suo
 Thumbs.db
 Desktop.ini
+# Runtime diagnostics and self-heal cache
+/recomp_cache/
+/recomp_coverage_*.json
+/recomp_master_misses_*.toml.frag
+/miss_iwram*.bin
+/miss_ewram*.bin
+/final_iwram*.bin

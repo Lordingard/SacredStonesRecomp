@@ -15,7 +15,7 @@ param(
 . "$PSScriptRoot/common.ps1"
 
 $resolvedGbaRecompExe = Resolve-Setting $GbaRecompExe "GBARECOMP_EXE" "GbaRecompExe" "D:\Jeux\GBARecomp\gbarecomp.exe"
-$resolvedRomPath = Resolve-Setting $RomPath "FE8_ROM" "RomPath" "E:\git\Fire Emblem - The Sacred Stones (U).gba"
+$resolvedRomPath = Resolve-Setting $RomPath "FE8_ROM" "RomPath" $script:DefaultRomPath
 $resolvedOutputPath = Resolve-Setting $OutputPath "SACREDSTONES_RECOMP_OUTPUT" "GeneratedProjectPath" $script:DefaultGeneratedProject
 $resolvedConfigPath = Resolve-Setting $ConfigPath "SACREDSTONES_RECOMP_CONFIG" "GameConfigPath" (Join-Path $script:RepoRoot "config/game.fe8u.toml")
 $resolvedSymbolsPath = Resolve-Setting $SymbolsPath "SACREDSTONES_RECOMP_SYMBOLS" "ImportedSymbolsPath" (Join-Path $script:RepoRoot "symbols/imported_symbols.tsv")

@@ -8,7 +8,7 @@ param(
 . "$PSScriptRoot/common.ps1"
 
 $resolvedGbaRecompExe = Resolve-Setting $GbaRecompExe "GBARECOMP_EXE" "GbaRecompExe" "D:\Jeux\GBARecomp\gbarecomp.exe"
-$resolvedRomPath = Resolve-Setting $RomPath "FE8_ROM" "RomPath" "E:\git\Fire Emblem - The Sacred Stones (U).gba"
+$resolvedRomPath = Resolve-Setting $RomPath "FE8_ROM" "RomPath" $script:DefaultRomPath
 
 Assert-File -Path $resolvedGbaRecompExe -Label "GBARecomp CLI"
 Assert-Rom -Path $resolvedRomPath

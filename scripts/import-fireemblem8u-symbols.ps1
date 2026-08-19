@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory = $true)][string] $ElfPath,
     [string] $OutputPath,
-    [string] $NmPath = "arm-none-eabi-nm",
+    [string] $ReadElfPath = "arm-none-eabi-readelf",
+    [switch] $UseWsl,
     [switch] $IncludeLocalSymbols
 )
 
@@ -10,10 +11,15 @@ param(
 $resolvedOutputPath = Resolve-Setting $OutputPath "SACREDSTONES_RECOMP_SYMBOLS" "ImportedSymbolsPath" (Join-Path $script:RepoRoot "symbols/imported_symbols.tsv")
 Assert-File -Path $ElfPath -Label "fireemblem8u ELF"
 
-$nmArgs = @("--defined-only", $ElfPath)
-$lines = & $NmPath @nmArgs
+if ($UseWsl) {
+    Assert-WslAvailable
+    $wslElf = ConvertTo-WslPath $ElfPath
+    $lines = & wsl.exe bash -lc "$ReadElfPath -Ws $(Quote-WslShellArgument $wslElf)"
+} else {
+    $lines = & $ReadElfPath "-Ws" $ElfPath
+}
 if ($LASTEXITCODE -ne 0) {
-    throw "Failed to run $NmPath. Put arm-none-eabi-nm in PATH or pass -NmPath."
+    throw "Failed to run $ReadElfPath. Put arm-none-eabi-readelf in PATH, pass -ReadElfPath, or use -UseWsl."
 }
 
 $rows = New-Object System.Collections.Generic.List[string]
@@ -22,18 +28,14 @@ $rows.Add("# Format: 0xADDR<TAB>mode<TAB>name")
 
 $seen = @{}
 foreach ($line in $lines) {
-    if ($line -notmatch "^\s*([0-9a-fA-F]+)\s+([A-Za-z])\s+(.+?)\s*$") {
+    if ($line -notmatch "^\s*\d+:\s+([0-9a-fA-F]+)\s+\d+\s+FUNC\s+(LOCAL|GLOBAL|WEAK)\s+\S+\s+\S+\s+(.+?)\s*$") {
         continue
     }
 
     $rawAddr = [Convert]::ToUInt32($Matches[1], 16)
-    $type = $Matches[2]
+    $bind = $Matches[2]
     $name = $Matches[3].Trim()
-
-    if ($type -cnotin @("T", "t", "W", "w")) {
-        continue
-    }
-    if (-not $IncludeLocalSymbols -and $type -ceq "t") {
+    if (-not $IncludeLocalSymbols -and $bind -ceq "LOCAL") {
         continue
     }
     if ($name.StartsWith("$") -or $name.StartsWith(".") -or $name -match "\s") {
@@ -54,5 +56,6 @@ foreach ($line in $lines) {
 }
 
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $resolvedOutputPath) | Out-Null
-Set-Content -LiteralPath $resolvedOutputPath -Value $rows -Encoding UTF8
+$utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+[System.IO.File]::WriteAllText($resolvedOutputPath, (($rows -join "`n") + "`n"), $utf8NoBom)
 Write-Host "Wrote $($rows.Count - 2) function seed symbols to: $resolvedOutputPath"

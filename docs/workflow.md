@@ -18,7 +18,7 @@ pwsh scripts/bootstrap.ps1 -WriteLocalConfig
 The default local paths are:
 
 - GBARecomp CLI: `D:\Jeux\GBARecomp\gbarecomp.exe`
-- FE8 US ROM: `E:\git\Fire Emblem - The Sacred Stones (U).gba`
+- FE8 US ROM: sibling of this repo, `..\Fire Emblem - The Sacred Stones (U).gba`
 
 Override them with parameters, environment variables, or
 `config/project.local.ps1`.
@@ -36,8 +36,7 @@ Or do both:
 pwsh scripts/build.ps1 -GenerateFirst
 ```
 
-The generated project is written to `.generated/gbarecomp/`. Its
-`build/gbarecomp_game.lib` is the first target artifact.
+The generated project is written to `.generated/gbarecomp/`. Its first target artifact is `build/gbarecomp_game.lib`, or `build/Release/gbarecomp_game.lib` with Visual Studio-style generators.
 
 ## Symbol import
 
@@ -54,7 +53,50 @@ function symbols with:
 
 ```powershell
 pwsh scripts/import-fireemblem8u-symbols.ps1 `
-  -ElfPath E:\git\fireemblem8u\fireemblem8.elf
+  -ElfPath .\extern\fireemblem8u\fireemblem8.elf `
+  -UseWsl
+```
+
+If `fireemblem8u` is not built yet, WSL is the recommended path on Windows.
+`bootstrap-fireemblem8u.ps1` only needs Git; `build-fireemblem8u.ps1` requires
+a working WSL distribution:
+
+```powershell
+pwsh scripts/bootstrap-fireemblem8u.ps1
+pwsh scripts/build-fireemblem8u.ps1
+pwsh scripts/import-fireemblem8u-symbols.ps1 `
+  -ElfPath .\extern\fireemblem8u\fireemblem8.elf `
+  -UseWsl
+```
+
+If Windows reports that WSL is not installed, install a distribution first:
+
+```powershell
+wsl --install Ubuntu
 ```
 
 Review the resulting `symbols/imported_symbols.tsv` before regenerating.
+
+## Launcher runtime state
+
+The Windows runner uses `recomp-ui` from `extern/recomp-ui` and calls the
+GBARecomp launcher seam before `run_game()`.
+
+Expected runtime behavior:
+
+- `src/main.cpp` forces the executable-local `game.toml` through `--config` so
+  launches from Explorer, terminals, and tests resolve the same save type and
+  ROM identity settings.
+- `src/main.cpp` also adds `--bios-hle` unless an explicit BIOS mode flag is
+  supplied. This skips the GBA boot logo.
+- The launcher hides the BIOS picker for this project, but if a cached BIOS path
+  exists it is still passed to the runtime as fallback data. This keeps BIOS HLE
+  compatible with unimplemented SWIs that fall back to the real/recompiled BIOS.
+- Battery saves are anchored to `build/runner-mingw/saves/<ROM filename>.sav`,
+  not beside the ROM.
+- `Assist Tools` is hidden in the launcher. Rewind and fast-forward remain
+  enabled in-game through the runtime bindings.
+
+Local files that must not be committed include `build/`, `recomp_cache/`,
+`keybinds.ini`, `sacredstonesrecomp.ini`, `*rom.cfg`, `*bios.cfg`, `*.sav`, and
+savestate files.
