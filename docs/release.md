@@ -1,5 +1,21 @@
 # Release Notes
 
+## v0.1.1-preview - Proposed
+
+Hotfix for the first Windows preview build.
+
+### Fixed
+
+- The runner now resolves `game.toml` from the executable directory on Windows.
+  This keeps BIOS HLE and FE8 SRAM configuration active when launching the
+  release from Explorer or another working directory.
+
+### Packaging
+
+- Windows archive remains binary-only and user-facing: executable, runtime DLLs,
+  launcher assets, `game.toml`, README, and release notes.
+- ROM files, BIOS dumps, saves, local picker/config files, caches, diagnostics,
+  logs, generated objects, and source archives are not included in the asset.
 ## v0.1.0-preview - Proposed
 
 First Windows preview build for *Fire Emblem: The Sacred Stones* (USA).

@@ -4,6 +4,11 @@
 #include <string>
 #include <vector>
 
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 #if defined(RECOMP_LAUNCHER)
 #include "launcher_seam.h"
 #endif
@@ -16,11 +21,30 @@ bool has_arg_with_value(const std::vector<std::string>& args, const char* name) 
     return false;
 }
 
+std::filesystem::path executable_path(const std::vector<std::string>& args) {
+#if defined(_WIN32)
+    std::wstring buffer(MAX_PATH, L'\0');
+    for (;;) {
+        DWORD written = GetModuleFileNameW(nullptr, buffer.data(),
+                                           static_cast<DWORD>(buffer.size()));
+        if (written == 0) break;
+        if (written < buffer.size() - 1) {
+            buffer.resize(written);
+            return std::filesystem::path(buffer);
+        }
+        buffer.resize(buffer.size() * 2);
+    }
+#endif
+
+    std::error_code ec;
+    return std::filesystem::absolute(args.empty() ? "" : args[0], ec);
+}
+
 void force_exe_local_config(std::vector<std::string>& args) {
     if (has_arg_with_value(args, "--config")) return;
 
     std::error_code ec;
-    std::filesystem::path exe = std::filesystem::absolute(args.empty() ? "" : args[0], ec);
+    std::filesystem::path exe = executable_path(args);
     std::filesystem::path config = exe.parent_path() / "game.toml";
     if (std::filesystem::exists(config, ec)) {
         args.push_back("--config");
