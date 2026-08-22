@@ -16,12 +16,11 @@ to match original/emulator behavior.
 
 Working now:
 
-- Integrated pre-boot launcher with ROM selection and box art.
+- Integrated pre-boot launcher with ROM and BIOS selection plus box art.
 - Correct FE8 SRAM save/load configuration.
 - Save states and rewind.
 - Xbox-compatible controller support through SDL.
-- BIOS HLE by default, so the GBA boot logo is skipped and users are not asked
-  for a BIOS during normal launches.
+- User-provided GBA BIOS support for correct boot, timing, and interrupt behavior.
 - Quiet project builds: generated/framework warning noise is filtered from the
   normal build output.
 
@@ -39,8 +38,8 @@ linked with a PC runtime that models the GBA hardware: graphics, audio, DMA,
 timers, input, save memory, cartridge mapping, and BIOS services.
 
 This repository does not contain the ROM, the GBA BIOS, or generated ROM-derived
-C/C++ output. You supply your own legally obtained ROM; local generated files and
-build products stay ignored by Git.
+C/C++ output. You supply your own legally obtained ROM and GBA BIOS; local
+generated files and build products stay ignored by Git.
 
 ## ROM
 
@@ -54,11 +53,12 @@ The runtime validates the ROM SHA-1 and refuses unrecognized ROMs.
 
 1. Download the latest `SacredStonesRecomp-*-win64.zip` release and extract it.
 2. Run `SacredStonesRecomp.exe`.
-3. Select your legally obtained *Fire Emblem: The Sacred Stones* USA ROM when
+3. Select your legally obtained GBA BIOS when prompted.
+4. Select your legally obtained *Fire Emblem: The Sacred Stones* USA ROM when
    prompted.
-4. Press Play.
+5. Press Play.
 
-The selected ROM path is cached next to the executable for future launches.
+The selected BIOS and ROM paths are cached next to the executable for future launches.
 Keep the extracted folder together when moving the game.
 
 ## Controls
@@ -88,6 +88,7 @@ Runtime files are local to the extracted folder:
 - Battery saves: `saves/`
 - Launcher settings: `sacredstonesrecomp.ini`
 - ROM picker cache: `sacredstonesrecomp-rom.cfg`
+- BIOS picker cache: `sacredstonesrecomp-bios.cfg`
 - Self-heal cache and diagnostics: `recomp_cache/` and `recomp_coverage_*.json`
 
 These files are intentionally excluded from source control and release archives.
@@ -133,6 +134,7 @@ files, caches, logs, generated objects, or local configuration.
 ## Legal
 
 This project contains no copyrighted ROM data and no Nintendo BIOS. You must
-supply your own legally obtained *Fire Emblem: The Sacred Stones* USA ROM. Fire
+supply your own legally obtained *Fire Emblem: The Sacred Stones* USA ROM and
+your own legally obtained GBA BIOS. Fire
 Emblem and The Sacred Stones are trademarks of Nintendo and Intelligent Systems.
 This project is an unaffiliated preservation and research effort.

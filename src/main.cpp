@@ -51,15 +51,6 @@ void force_exe_local_config(std::vector<std::string>& args) {
         args.push_back(config.string());
     }
 }
-void force_bios_hle_default(std::vector<std::string>& args) {
-    for (const std::string& arg : args) {
-        if (arg == "--no-bios-hle" || arg == "--bios-hle" ||
-            arg == "--bios-hle-keep-intro") {
-            return;
-        }
-    }
-    args.push_back("--bios-hle");
-}
 }
 
 int main(int argc, char** argv) {
@@ -83,14 +74,12 @@ int main(int argc, char** argv) {
     if (!args.empty()) args[0] = executable_path(args).string();
 
     force_exe_local_config(args);
-    force_bios_hle_default(args);
 
 #if defined(RECOMP_LAUNCHER)
     if (gbarecomp_launcher_preboot(args, opts)) return 0;
 #endif
 
     force_exe_local_config(args);
-    force_bios_hle_default(args);
 
     std::vector<char*> av;
     av.reserve(args.size());

@@ -1,5 +1,29 @@
 # Release Notes
 
+## v0.1.3-preview - Proposed
+
+Third hotfix for the Windows preview build.
+
+### Fixed
+
+- The Windows preview now uses a user-provided GBA BIOS instead of forcing the
+  incomplete BIOS HLE path. This restores correct boot timing and interrupt
+  behavior in the packaged launcher build.
+- The executable-local `game.toml` handling from v0.1.2 is kept, so launcher
+  state, ROM cache, BIOS cache, save path derivation, and runtime configuration
+  stay anchored to the extracted release folder.
+
+### Packaging
+
+- Windows archive remains binary-only and user-facing: executable at archive
+  root, runtime DLLs, launcher assets, `game.toml`, README, and release notes.
+- ROM files, BIOS dumps, saves, local picker/config files, caches, diagnostics,
+  logs, generated objects, and source archives are not included in the asset.
+
+### GitHub Cleanup
+
+- Earlier preview releases v0.1.0-preview, v0.1.1-preview, and v0.1.2-preview
+  were withdrawn because their packaged launcher builds were not reliable.
 ## v0.1.2-preview - Proposed
 
 Second hotfix for the Windows preview build.
