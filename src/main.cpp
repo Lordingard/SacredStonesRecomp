@@ -40,6 +40,16 @@ std::filesystem::path executable_path(const std::vector<std::string>& args) {
     return std::filesystem::absolute(args.empty() ? "" : args[0], ec);
 }
 
+std::filesystem::path exe_local_save_path(const std::vector<std::string>& args) {
+    return executable_path(args).parent_path() / "saves" / "SacredStonesRecomp.sav";
+}
+
+void force_save_path(std::vector<std::string>& args, const std::string& save_path) {
+    if (has_arg_with_value(args, "--save") || has_arg_with_value(args, "--save-path")) return;
+    args.push_back("--save-path");
+    args.push_back(save_path);
+}
+
 void force_exe_local_config(std::vector<std::string>& args) {
     if (has_arg_with_value(args, "--config")) return;
 
@@ -73,6 +83,9 @@ int main(int argc, char** argv) {
     std::vector<std::string> args(argv, argv + argc);
     if (!args.empty()) args[0] = executable_path(args).string();
 
+    std::string save_path = exe_local_save_path(args).string();
+    opts.launcher_save_path = save_path.c_str();
+
     force_exe_local_config(args);
 
 #if defined(RECOMP_LAUNCHER)
@@ -80,6 +93,7 @@ int main(int argc, char** argv) {
 #endif
 
     force_exe_local_config(args);
+    force_save_path(args, save_path);
 
     std::vector<char*> av;
     av.reserve(args.size());

@@ -11,5 +11,6 @@ hle = false
 # path = "../gba_bios.bin"
 
 [save]
+path = "saves/SacredStonesRecomp.sav"
 type = "sram"
 size = 0x8000

@@ -85,7 +85,7 @@ Default assist bindings:
 
 Runtime files are local to the extracted folder:
 
-- Battery saves: `saves/`
+- Battery save: `saves/SacredStonesRecomp.sav`
 - Launcher settings: `sacredstonesrecomp.ini`
 - ROM picker cache: `sacredstonesrecomp-rom.cfg`
 - BIOS picker cache: `sacredstonesrecomp-bios.cfg`

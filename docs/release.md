@@ -1,5 +1,16 @@
 # Release Notes
 
+## v0.1.4-preview - Proposed
+
+Save-path hotfix for the Windows preview build.
+
+### Fixed
+
+- Battery saves now use an executable-local stable path:
+  `saves/SacredStonesRecomp.sav`.
+- The save filename no longer depends on the selected ROM filename, and the
+  runtime no longer falls back to writing a `.sav` beside the ROM when launched
+  through the packaged runner.
 ## v0.1.3-preview - Proposed
 
 Third hotfix for the Windows preview build.
