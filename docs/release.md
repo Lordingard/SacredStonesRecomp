@@ -1,5 +1,26 @@
 # Release Notes
 
+## v0.1.5-preview - Proposed
+
+Save handling and launcher BIOS picker hotfix for the Windows preview build.
+
+### Fixed
+
+- The launcher exposes the GBA BIOS picker again and persists the selected BIOS
+  path beside the executable.
+- The runner now forces FE8's SRAM save type at process startup. This keeps the
+  interactive launcher path from losing `[save].type = "sram"` before runtime
+  save-chip setup.
+- The runner now creates the executable-local `saves/` directory before runtime
+  startup.
+- Existing battery saves are migrated to the stable path
+  `saves/SacredStonesRecomp.sav` when the stable file is missing or still blank.
+- Migration checks the prior launcher/runtime conventions: `saves/<ROM>.sav`,
+  a `.sav` beside the ROM, a `.sav` beside the executable, and the temporary
+  singular `save/` folder used during manual testing.
+- SRAM 16-bit and 32-bit writes now persist every byte instead of only the low
+  byte. This matches BIOS copy routines that write wider words into the 8-bit
+  SRAM region.
 ## v0.1.4-preview - Proposed
 
 Save-path hotfix for the Windows preview build.

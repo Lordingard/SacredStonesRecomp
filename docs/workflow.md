@@ -87,13 +87,16 @@ Expected runtime behavior:
 - `src/main.cpp` forces the executable-local `game.toml` through `--config` so
   launches from Explorer, terminals, and tests resolve the same save type and
   ROM identity settings.
-- `src/main.cpp` also adds `--bios-hle` unless an explicit BIOS mode flag is
-  supplied. This skips the GBA boot logo.
-- The launcher hides the BIOS picker for this project, but if a cached BIOS path
-  exists it is still passed to the runtime as fallback data. This keeps BIOS HLE
-  compatible with unimplemented SWIs that fall back to the real/recompiled BIOS.
-- Battery saves are anchored to `build/runner-mingw/saves/<ROM filename>.sav`,
-  not beside the ROM.
+- The packaged preview uses a user-provided GBA BIOS by default. The launcher
+  exposes the BIOS picker and caches the selected path next to the executable.
+- `src/main.cpp` forces FE8's SRAM save type at process startup because this
+  single-game runner must not depend on launcher/config propagation for save-chip
+  setup.
+- Battery saves are anchored to `saves/SacredStonesRecomp.sav` next to the
+  executable, not beside the ROM.
+- On launch, `src/main.cpp` creates the `saves/` directory and migrates useful
+  legacy saves from `saves/<ROM filename>.sav`, a `.sav` beside the ROM, a
+  `.sav` beside the executable, or the temporary `save/` folder.
 - `Assist Tools` is hidden in the launcher. Rewind and fast-forward remain
   enabled in-game through the runtime bindings.
 
