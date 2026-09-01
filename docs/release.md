@@ -1,5 +1,20 @@
 # Release Notes
 
+## v0.1.6-preview - Proposed
+
+Clean build and packaging reproducibility update for the Windows preview build.
+
+### Fixed
+
+- Clean checkouts can now rebuild the launcher runner end to end with `scripts/build-runner.ps1`.
+- The runner build regenerates local BIOS-derived recompilation output from the user-provided BIOS instead of relying on files left in a developer checkout.
+- The generated game library is now built with MinGW and linked as `libgbarecomp_game.a`, removing the previous `corrupt .drectve` linker warnings caused by mixing MSVC objects with the MinGW runner.
+- MinGW runtime DLL staging now follows the configured compiler path instead of assuming `C:\msys64`.
+
+### Verified
+
+- Fresh clone build, package creation, BIOS LLE backend, and SRAM save configuration were validated from `F:\git\SacredStonesRecompTemp`.
+
 ## v0.1.5-preview - Proposed
 
 Save handling and launcher BIOS picker hotfix for the Windows preview build.
