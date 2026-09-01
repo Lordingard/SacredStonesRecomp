@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(SacredStonesRecomp C CXX)
+project(SacredStonesRecomp C CXX ASM)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
@@ -12,10 +12,10 @@ if(NOT EXISTS "${GBARECOMP_ROOT}/CMakeLists.txt")
     message(FATAL_ERROR "GBARecomp source checkout not found at ${GBARECOMP_ROOT}. Run git submodule update --init --recursive first.")
 endif()
 
-set(_tomlpp_header "${GBARECOMP_ROOT}/third_party/tomlpp/toml.hpp")
-if(NOT EXISTS "${_tomlpp_header}")
-    file(MAKE_DIRECTORY "${GBARECOMP_ROOT}/third_party/tomlpp")
-    file(WRITE "${_tomlpp_header}" "#pragma once\n")
+
+if(MINGW AND CMAKE_CXX_COMPILER AND NOT DEFINED GBARECOMP_MINGW_RUNTIME_BIN)
+    get_filename_component(_sacredstones_mingw_bin "${CMAKE_CXX_COMPILER}" DIRECTORY)
+    set(GBARECOMP_MINGW_RUNTIME_BIN "${_sacredstones_mingw_bin}" CACHE PATH "Directory containing MinGW runtime DLLs for development builds")
 endif()
 
 add_subdirectory("${GBARECOMP_ROOT}" "${CMAKE_BINARY_DIR}/gbarecomp-core" EXCLUDE_FROM_ALL)
@@ -66,6 +66,9 @@ add_executable(SacredStonesRecomp
 )
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
+        target_sources(SacredStonesRecomp PRIVATE src/mingw_msvc_chkstk.S)
+    endif()
     target_link_libraries(SacredStonesRecomp PRIVATE
         "$<LINK_GROUP:RESCAN,gbarecomp_runtime,gbarecomp_debug,sacredstones_generated,gbarecomp_recompile_core,gbarecomp_heal_gate,gbarecomp_gba,gbarecomp_armv4t>"
     )

@@ -47,13 +47,14 @@ pwsh scripts/generate.ps1 -Force
 pwsh scripts/build.ps1
 ```
 
-Or do both:
+Or do both, then build the launcher runner:
 
 ```powershell
 pwsh scripts/build.ps1 -GenerateFirst
+pwsh scripts/build-runner.ps1
 ```
 
-The generated project is written to `.generated/gbarecomp/`. Its first target artifact is `build/gbarecomp_game.lib`, or `build/Release/gbarecomp_game.lib` with Visual Studio-style generators.
+The generated project is written to `.generated/gbarecomp/`. Its first target artifact is `build/gbarecomp_game.lib`, or `build/Release/gbarecomp_game.lib` with Visual Studio-style generators. The runner build regenerates local BIOS-derived output when `BiosPath` or `GBA_BIOS` is configured; these files are ignored and must not be committed.
 
 ## Symbol import
 

@@ -118,14 +118,7 @@ The short Windows path is:
 ```powershell
 pwsh scripts/bootstrap.ps1 -WriteLocalConfig
 pwsh scripts/build.ps1 -GenerateFirst
-```
-
-The MinGW runner is built separately with CMake after the generated game library
-exists. From an MSYS2 MINGW64 shell, configure and build it with:
-
-```sh
-cmake -S . -B build/runner-mingw -G Ninja
-cmake --build build/runner-mingw --target SacredStonesRecomp --parallel
+pwsh scripts/build-runner.ps1
 ```
 
 Release packages are created with:
