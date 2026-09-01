@@ -30,6 +30,7 @@ cmake_install.cmake
 
 # Local dependency checkouts and machine-specific config
 /extern/*
+!/extern/gbarecomp/
 !/extern/recomp-ui/
 /third_party/
 /config/project.local.ps1

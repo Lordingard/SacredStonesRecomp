@@ -5,8 +5,8 @@
 > improving. Testing reports and focused bug reproductions are useful.
 
 Static recompilation of *Fire Emblem: The Sacred Stones* (Game Boy Advance) to a
-native Windows executable, built on the [`gbarecomp`](https://github.com/mstan/gbarecomp)
-framework with the [`recomp-ui`](https://github.com/mstan/recomp-ui) launcher.
+native Windows executable, built on a pinned [`gbarecomp`](https://github.com/Lordingard/gbarecomp/tree/sacred-stones-runtime)
+runtime fork with the [`recomp-ui`](https://github.com/mstan/recomp-ui) launcher.
 
 ## Status - Playable Preview
 
@@ -106,8 +106,14 @@ project explores more of the game and closes rare coverage gaps.
 
 ## Building From Source
 
-Developer workflow details live in [docs/workflow.md](docs/workflow.md). The
-short Windows path is:
+Developer workflow details live in [docs/workflow.md](docs/workflow.md). Clone
+submodules before building:
+
+```powershell
+git submodule update --init --recursive
+```
+
+The short Windows path is:
 
 ```powershell
 pwsh scripts/bootstrap.ps1 -WriteLocalConfig

@@ -23,6 +23,23 @@ The default local paths are:
 Override them with parameters, environment variables, or
 `config/project.local.ps1`.
 
+## Runtime Dependency Updates
+
+`extern/gbarecomp` is a pinned submodule that points to the Sacred Stones runtime
+branch on the project fork:
+
+```powershell
+git submodule update --init --recursive extern/gbarecomp
+```
+
+The fork tracks upstream `mstan/gbarecomp` through the `sacred-stones-runtime`
+branch. To refresh it, update that branch in `Lordingard/gbarecomp`, rebuild this
+project, verify boot and internal saves, then bump the submodule pointer in this
+repository.
+
+`extern/recomp-ui` remains a separate submodule because launcher UI updates can
+be evaluated independently from runtime changes.
+
 ## Generate and build
 
 ```powershell

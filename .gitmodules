@@ -1,3 +1,7 @@
 [submodule "extern/recomp-ui"]
 	path = extern/recomp-ui
 	url = https://github.com/mstan/recomp-ui.git
+[submodule "extern/gbarecomp"]
+	path = extern/gbarecomp
+	url = https://github.com/Lordingard/gbarecomp.git
+	branch = sacred-stones-runtime

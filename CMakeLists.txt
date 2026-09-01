@@ -9,7 +9,7 @@ set(GBARECOMP_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/extern/gbarecomp" CACHE PATH "Pa
 set(SACREDSTONES_GENERATED_PROJECT "${CMAKE_CURRENT_SOURCE_DIR}/.generated/gbarecomp" CACHE PATH "Path to generated GBARecomp output")
 
 if(NOT EXISTS "${GBARECOMP_ROOT}/CMakeLists.txt")
-    message(FATAL_ERROR "GBARecomp source checkout not found at ${GBARECOMP_ROOT}. Clone https://github.com/mstan/gbarecomp into extern/gbarecomp first.")
+    message(FATAL_ERROR "GBARecomp source checkout not found at ${GBARECOMP_ROOT}. Run git submodule update --init --recursive first.")
 endif()
 
 set(_tomlpp_header "${GBARECOMP_ROOT}/third_party/tomlpp/toml.hpp")
