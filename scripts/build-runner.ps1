@@ -37,6 +37,7 @@ $env:PATH = "$resolvedMingwBin;$env:PATH"
 
 $generatedBuildDir = Join-Path $resolvedGeneratedProject "build-mingw"
 $generatedLib = Join-Path $generatedBuildDir "libgbarecomp_game.a"
+$generatedBiosDir = Join-Path $resolvedBuildDir "generated-bios"
 
 Write-Host "Configuring generated game library: $generatedBuildDir"
 & cmake -S $resolvedGeneratedProject -B $generatedBuildDir -G Ninja
@@ -51,9 +52,11 @@ $cmakeArgs = @(
     "-S", $script:RepoRoot,
     "-B", $resolvedBuildDir,
     "-G", "Ninja",
+    "-U", "GBARECOMP_TOMLPP_INCLUDE_DIR",
     "-DGBARECOMP_MINGW_RUNTIME_BIN=$resolvedMingwBin",
     "-DSACREDSTONES_GENERATED_PROJECT=$resolvedGeneratedProject",
-    "-DSACREDSTONES_GAME_LIB=$generatedLib"
+    "-DSACREDSTONES_GAME_LIB=$generatedLib",
+    "-DGBARECOMP_GENERATED_BIOS_DIR=$generatedBiosDir"
 )
 
 Write-Host "Configuring runner: $resolvedBuildDir"
@@ -70,12 +73,10 @@ if ($resolvedBiosPath) {
     $gbaRecompile = Join-Path $resolvedBuildDir "gbarecomp-core/gba_recompile.exe"
     Assert-File -Path $gbaRecompile -Label "gba_recompile"
 
-    Write-Host "Generating local recompiled BIOS output"
-    Push-Location (Join-Path $script:RepoRoot "extern/gbarecomp")
-    & $gbaRecompile --bios $resolvedBiosPath
-    $exitCode = $LASTEXITCODE
-    Pop-Location
-    if ($exitCode -ne 0) { exit $exitCode }
+    Write-Host "Generating local recompiled BIOS output: $generatedBiosDir"
+    New-Item -ItemType Directory -Force -Path $generatedBiosDir | Out-Null
+    & $gbaRecompile --bios $resolvedBiosPath --out $generatedBiosDir
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     Write-Host "Reconfiguring runner with recompiled BIOS output"
     & cmake @cmakeArgs
