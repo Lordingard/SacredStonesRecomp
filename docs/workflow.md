@@ -50,7 +50,7 @@ pwsh scripts/build.ps1
 Or do both, then build the launcher runner:
 
 ```powershell
-pwsh scripts/build.ps1 -GenerateFirst
+pwsh scripts/generate.ps1 -Force
 pwsh scripts/build-runner.ps1
 ```
 

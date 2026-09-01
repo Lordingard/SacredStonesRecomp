@@ -117,7 +117,7 @@ The short Windows path is:
 
 ```powershell
 pwsh scripts/bootstrap.ps1 -WriteLocalConfig
-pwsh scripts/build.ps1 -GenerateFirst
+pwsh scripts/generate.ps1 -Force
 pwsh scripts/build-runner.ps1
 ```
 
