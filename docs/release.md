@@ -27,8 +27,10 @@
   binaries, launcher assets, configuration, README, and release notes only;
   no ROM, BIOS dump, user save, cache, or generated source is distributed.
 - Update the README's project status and retain the AI-assisted development
-  disclosure. Minor intro audio and incomplete full-game coverage remain known
-  limitations; broader upstream launcher and CPU timing updates are deferred.
+  disclosure. The maintainer no longer observes the previously reported intro
+  audio artifact in recent releases; its original cause remains unconfirmed.
+  Full-game coverage remains incomplete; broader upstream launcher and CPU
+  timing updates are deferred.
 
 ## v0.1.8 - 2026-10-05
 

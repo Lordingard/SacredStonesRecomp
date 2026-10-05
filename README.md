@@ -25,6 +25,9 @@ The game boots through the launcher and is playable into normal gameplay. The
 major visible issues found during early testing have been resolved or confirmed
 to match original/emulator behavior.
 
+The previously reported intro audio artifact is no longer observed by the
+maintainer in recent releases; its original cause has not been confirmed.
+
 Working now:
 
 - Optimized Windows Release builds for the game and runtime.
@@ -40,7 +43,6 @@ Working now:
 
 Known limitations:
 
-- A very small audio artifact may be heard at the very beginning of the intro.
 - Windows is the only packaged target for now.
 - Mods are not currently exposed.
 - The game has not yet been exhaustively tested from start to finish.
