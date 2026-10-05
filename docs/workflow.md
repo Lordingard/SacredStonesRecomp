@@ -54,7 +54,26 @@ pwsh scripts/generate.ps1 -Force
 pwsh scripts/build-runner.ps1
 ```
 
-The generated project is written to `.generated/gbarecomp/`. Its first target artifact is `build/gbarecomp_game.lib`, or `build/Release/gbarecomp_game.lib` with Visual Studio-style generators. The runner build regenerates local BIOS-derived output when `BiosPath` or `GBA_BIOS` is configured; these files are ignored and must not be committed.
+The generated project is written to `.generated/gbarecomp/`. The Windows runner
+uses its MinGW library, `build-mingw/libgbarecomp_game.a`. `build-runner.ps1`
+requires `BiosPath` (or `GBA_BIOS`) and regenerates BIOS output using the pinned
+`extern/gbarecomp/bios/gba_bios.toml`. Omitting this configuration loses interrupt
+return entries and caused the v0.1.6 startup crash. Generated files stay ignored.
+Build parallelism defaults to two jobs; use `-Jobs` to change it.
+
+## Release validation
+
+Run `pwsh scripts/test-release.ps1` for isolated boot and SRAM-file reload tests.
+`scripts/package-release.ps1 -Version 0.1.7` runs the same tests against its staged
+files before creating the archive. Both accept `-BiosPath` and `-RomPath`.
+Each run preserves logs and disposable saves in a unique `build/validation/`
+directory, with developer compiler directories removed from the child PATH.
+
+The optional `-ExtendedInput` test presses menu buttons for 3,600 headless frames
+and enforces static coverage. It currently exposes guest resume coverage gaps and
+the unavailable TCC fallback in the packaged distribution; see
+[the code review](review-2026-10-05.md). Boot tests do not certify slot contents,
+combat, rewind, or controller behavior. Check those manually before publishing.
 
 ## Symbol import
 

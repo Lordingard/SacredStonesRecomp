@@ -1,7 +1,9 @@
 param(
     [string] $BuildDir = "build/runner-mingw",
-    [string] $Version = "0.1.0-preview",
-    [string] $OutputDir = "dist"
+    [Parameter(Mandatory = $true)][ValidatePattern('^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$')][string] $Version,
+    [string] $OutputDir = "dist",
+    [string] $RomPath,
+    [string] $BiosPath
 )
 
 $ErrorActionPreference = "Stop"
@@ -25,7 +27,7 @@ if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) {
 New-Item -ItemType Directory -Force -Path $outRoot | Out-Null
 $outFull = [System.IO.Path]::GetFullPath($outRoot)
 $stageFull = [System.IO.Path]::GetFullPath($stageRoot)
-if (-not $stageFull.StartsWith($outFull, [System.StringComparison]::OrdinalIgnoreCase)) {
+if (-not $stageFull.StartsWith($outFull.TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw "Refusing to remove a staging directory outside the output directory: $stageFull"
 }
 if (Test-Path -LiteralPath $stageRoot) {
@@ -58,6 +60,8 @@ Copy-Item -LiteralPath $assets -Destination (Join-Path $stageRoot "assets") -Rec
 Copy-Item -LiteralPath (Join-Path $repoRoot "game.toml") -Destination (Join-Path $stageRoot "game.toml") -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "README.md") -Destination (Join-Path $stageRoot "README.md") -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "docs/release.md") -Destination (Join-Path $stageRoot "RELEASE_NOTES.md") -Force
+
+& "$PSScriptRoot/test-release.ps1" -BuildDir $stageRoot -RomPath $RomPath -BiosPath $BiosPath
 
 if (Test-Path -LiteralPath $zipPath) {
     Remove-Item -LiteralPath $zipPath -Force

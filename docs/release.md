@@ -1,5 +1,18 @@
 # Release Notes
 
+## v0.1.7 - 2026-10-05
+
+- Fix the crash after the Game Boy Advance logo by using the pinned BIOS
+  recompilation configuration, including interrupt returns and resume entries.
+- Require a BIOS for runner builds and limit default build parallelism to two jobs.
+- Test staged binaries through boot and SRAM-file reload before creating archives.
+- Keep isolated validation logs under `build/validation/`.
+- Additional review findings and remaining test gaps are recorded in
+  `docs/review-2026-10-05.md`.
+- The corrected archive was tested successfully by the user before publication.
+  Automated checks cover startup and SRAM-file reload; they do not certify all
+  gameplay paths or in-game save-slot contents.
+
 ## v0.1.6-preview - Proposed
 
 Clean build and packaging reproducibility update for the Windows preview build.

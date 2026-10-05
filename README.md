@@ -124,11 +124,16 @@ pwsh scripts/build-runner.ps1
 Release packages are created with:
 
 ```powershell
-pwsh scripts/package-release.ps1 -Version 0.1.0-preview
+pwsh scripts/package-release.ps1 -Version 0.1.7
 ```
 
 The package script uses a whitelist and must not include ROMs, BIOS dumps, save
 files, caches, logs, generated objects, or local configuration.
+
+Configure `BiosPath` and `RomPath` in `config/project.local.ps1`, or pass them
+explicitly. Packaging tests the staged executable in isolation through 1,200
+frames of boot and another 1,200 frames after reopening its test save. Logs
+remain in `build/validation/`. This does not replace manual gameplay testing.
 
 ## Legal
 
