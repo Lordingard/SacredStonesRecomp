@@ -254,6 +254,23 @@ Review the resulting `symbols/imported_symbols.tsv` before regenerating.
 
 ## Launcher runtime state
 
+### v0.1.10 clean-build validation
+
+On 2026-10-05, a fresh clone at
+`F:/git/SacredStonesRecompTemp/v0.1.10-clean-b97283a1` regenerated the game and
+BIOS and built the optimized MinGW runner. Its launcher pin was
+`c4055c2238ff23fe0d3edf74f3e99002d874120e`; its runtime pin was
+`97736f608714b34e2fad2b0e540c082e8a8d5e37`. Both were fetched from GitHub.
+
+The save-file, launcher-policy, and runtime-controls programs passed, as did
+the real ImGui layout and launcher Backspace navigation tests. All thirteen
+release scenarios passed, including preference restoration from another
+working directory and malformed-preference fallback. Evidence is retained in
+`build/clean-generate.log`, `build/clean-build.log`, `build/clean-regression.log`,
+and `build/validation/ffc469fadc1544f08645ea874ca241a1/` in that clone.
+This automated coverage complements maintainer gameplay validation; it is not
+a claim of full-game coverage.
+
 The Windows runner uses `recomp-ui` from `extern/recomp-ui` and calls the
 GBARecomp launcher seam before `run_game()`.
 
@@ -272,9 +289,16 @@ Expected runtime behavior:
 - On launch, `src/main.cpp` creates the `saves/` directory and migrates useful
   legacy saves from `saves/<ROM filename>.sav`, a `.sav` beside the ROM, a
   `.sav` beside the executable, or the temporary `save/` folder.
-- `Assist Tools` is hidden in the launcher. Rewind and fast-forward remain
-  enabled in-game through the runtime bindings.
+- `Assist Tools` is hidden in the launcher. Escape or the controller Guide
+  button opens the in-game menu with save-state, fast-forward, and rewind controls.
+- The executable-local `runtime-controls.toml` persists the selected slot,
+  fast-forward multiplier, and Assist Tools/rewind enable switches. Display/audio
+  menu changes, active fast-forward, and rewind history are session-only.
+- Save states remain beside the selected ROM as `.state1` through `.state9`;
+  they do not share the standardized battery-save path.
+- `launcher-window.ini` remembers launcher dimensions; a new installation starts
+  at 940x799, constrained to the display's usable area.
 
 Local files that must not be committed include `build/`, `recomp_cache/`,
-`keybinds.ini`, `sacredstonesrecomp.ini`, `*rom.cfg`, `*bios.cfg`, `*.sav`, and
-savestate files.
+`keybinds.ini`, `sacredstonesrecomp.ini`, `launcher-window.ini`,
+`runtime-controls.toml`, `*rom.cfg`, `*bios.cfg`, `*.sav`, and savestate files.

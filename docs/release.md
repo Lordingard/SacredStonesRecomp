@@ -2,6 +2,9 @@
 
 ## v0.1.10 - 2026-10-05
 
+- Rebuild from an isolated clean clone with pinned dependencies fetched from
+  GitHub. All thirteen runtime scenarios, three project test programs, and both
+  targeted launcher/runtime-menu tests passed.
 - Enable the existing GBARecomp in-game menu through SDL_Renderer2 without
   changing game rendering, CPU timing, BIOS policy, or save formats.
 - Open the menu with Escape or the controller Guide button. Expose slots 1-9,
