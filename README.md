@@ -8,6 +8,16 @@ Static recompilation of *Fire Emblem: The Sacred Stones* (Game Boy Advance) to a
 native Windows executable, built on a pinned [`gbarecomp`](https://github.com/Lordingard/gbarecomp/tree/sacred-stones-runtime)
 runtime fork with the [`recomp-ui`](https://github.com/mstan/recomp-ui) launcher.
 
+## AI-Assisted Development
+
+This project is developed with substantial assistance from OpenAI Codex, including
+code changes, runtime integration, debugging, code review, build tooling, and
+documentation. The maintainer directs the work, makes project decisions, and
+tests releases through gameplay, alongside automated checks.
+
+This describes the work on SacredStonesRecomp and its runtime fork; it does not
+attribute AI use to the upstream projects or the original game.
+
 ## Status - Playable Preview
 
 The game boots through the launcher and is playable into normal gameplay. The
