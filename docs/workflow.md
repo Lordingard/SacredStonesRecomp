@@ -190,6 +190,29 @@ Game regression logs: `build/validation/6b81d926a0e3462b8c642b237b7dabb4/`.
 Launcher screenshots and logs:
 `build/validation/launcher-ui-6bb0d9464da84775943a67195fa6096f/`.
 
+## v0.1.9 clean-build validation
+
+On 2026-10-05, an isolated clone at
+`F:/git/SacredStonesRecompTemp/v0.1.9-clean-5d4a2d5b` rebuilt the generator,
+game library, BIOS code, runtime, and launcher without reusing generated code,
+objects, or runtime caches. Recursive dependencies were fetched from GitHub:
+
+- GBARecomp: `f8e213861e1880ff73250012fcfe67d4939dba6a`.
+- arm-core: `763b922f4912708d2704e7833f18addfbf8ddf33`.
+- recomp-ui: `2b0a36e07fef97e9de14d3477f0131ff0383cc3d`.
+
+Both the generated game library and runner used Release optimization.
+Generation-provenance checks passed all four cases. All eleven release-test
+scenarios passed with extended input, windowed input, and diagnostic capture,
+including an unavailable preferred controller. Four upstream native tests and
+the project's save-file and launcher-policy test programs also passed.
+
+Evidence is retained in that clone under `build/clean-generate.log`,
+`build/clean-build.log`, `build/clean-regression.log`, and
+`build/clean-native-tests.log`. Compiler warnings in upstream generation/test
+code remain; there were no build errors. These automated checks complement the
+maintainer's gameplay validation but do not certify every chapter or game path.
+
 ## Symbol import
 
 GBARecomp accepts imported function seed symbols as:

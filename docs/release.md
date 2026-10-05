@@ -2,6 +2,9 @@
 
 ## v0.1.9 - 2026-10-05
 
+- Rebuild from an isolated clean clone with all pinned dependencies downloaded
+  from GitHub. All eleven runtime scenarios, four upstream native tests, and
+  the save-file and launcher-policy test programs passed.
 - Build the game and runtime in optimized Release mode by default. The maintainer
   validated normal gameplay and smooth fast-forward.
 - Integrate the selected upstream opt-in diagnostic performance update, with
