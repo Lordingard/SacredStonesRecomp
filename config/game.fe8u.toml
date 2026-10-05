@@ -7,6 +7,7 @@ id = "fe8u"
 load_address = 0x08000000
 size = 0x01000000
 entry_pc = 0x08000000
+static_resume_all = true
 
 [identity]
 sha1 = "c25b145e37456171ada4b0d440bf88a19f4d509f"

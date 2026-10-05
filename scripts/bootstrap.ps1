@@ -1,5 +1,4 @@
 param(
-    [string] $GbaRecompExe,
     [string] $RomPath,
     [switch] $WriteLocalConfig,
     [switch] $WithFireEmblem8u
@@ -7,14 +6,12 @@ param(
 
 . "$PSScriptRoot/common.ps1"
 
-$resolvedGbaRecompExe = Resolve-Setting $GbaRecompExe "GBARECOMP_EXE" "GbaRecompExe" "D:\Jeux\GBARecomp\gbarecomp.exe"
 $resolvedRomPath = Resolve-Setting $RomPath "FE8_ROM" "RomPath" $script:DefaultRomPath
 
-Assert-File -Path $resolvedGbaRecompExe -Label "GBARecomp CLI"
 Assert-Rom -Path $resolvedRomPath
 $cmakePath = Get-NativeCMake
 
-Write-Host "GBARecomp: $resolvedGbaRecompExe"
+Write-Host "GBARecomp: pinned sources in extern/gbarecomp (built by scripts/generate.ps1)"
 Write-Host "ROM:        $resolvedRomPath"
 Write-Host "CMake:      $cmakePath"
 Write-Host "ROM SHA1:   $script:ExpectedRomSha1"

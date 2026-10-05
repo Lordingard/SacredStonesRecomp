@@ -105,3 +105,6 @@ add_custom_command(TARGET SacredStonesRecomp POST_BUILD
 if(COMMAND gbarecomp_stage_mingw_runtime)
     gbarecomp_stage_mingw_runtime(SacredStonesRecomp)
 endif()
+
+add_executable(sacredstones_save_file_tests EXCLUDE_FROM_ALL tests/save_file_test.cpp)
+target_include_directories(sacredstones_save_file_tests PRIVATE "${GBARECOMP_ROOT}/src/runtime")

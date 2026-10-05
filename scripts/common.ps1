@@ -64,6 +64,55 @@ function Assert-File {
     }
 }
 
+function Resolve-RepoPath {
+    param([Parameter(Mandatory = $true)][string] $Path)
+    if ([IO.Path]::IsPathRooted($Path)) { return [IO.Path]::GetFullPath($Path) }
+    return [IO.Path]::GetFullPath((Join-Path $script:RepoRoot $Path))
+}
+
+function Get-FrameworkIdentity {
+    $root = Join-Path $script:RepoRoot "extern/gbarecomp"
+    $core = Join-Path $root "external/arm-recomp-core"
+    $revision = & git -C $root rev-parse HEAD
+    if ($LASTEXITCODE -ne 0) { throw "Cannot read GBARecomp revision." }
+    $coreRevision = & git -C $core rev-parse HEAD
+    if ($LASTEXITCODE -ne 0) { throw "Cannot read arm-recomp-core revision." }
+    $entries = [Collections.Generic.List[string]]::new()
+    foreach ($tree in @($root, $core)) {
+        $files = & git -C $tree ls-files --cached --others --exclude-standard
+        if ($LASTEXITCODE -ne 0) { throw "Cannot inventory framework sources." }
+        foreach ($file in ($files | Sort-Object -Unique)) {
+            if ($file -like 'src/runtime/generated_bios/*') { continue }
+            $path = Join-Path $tree $file
+            if (Test-Path -LiteralPath $path -PathType Leaf) {
+                $entries.Add("$file=$((Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash)")
+            }
+        }
+    }
+    $bytes = [Text.Encoding]::UTF8.GetBytes(($entries -join "`n"))
+    $digest = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes))
+    return @{ revision = "$revision"; core_revision = "$coreRevision"; source_digest = $digest }
+}
+
+function Assert-GenerationProvenance {
+    param([string] $Project)
+    $manifestPath = Join-Path $Project "sacredstones-generation.json"
+    Assert-File -Path $manifestPath -Label "Generation provenance (run scripts/generate.ps1 -Force)"
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    $identity = Get-FrameworkIdentity
+    if ($manifest.framework.revision -ne $identity.revision -or
+        $manifest.framework.core_revision -ne $identity.core_revision -or
+        $manifest.framework.source_digest -ne $identity.source_digest) {
+        throw "Generated game and framework sources differ. Run scripts/generate.ps1 -Force."
+    }
+    foreach ($input in $manifest.inputs) {
+        Assert-File -Path $input.path -Label "Generation input"
+        if ((Get-FileHash -LiteralPath $input.path -Algorithm SHA256).Hash -ne $input.sha256) {
+            throw "Generation input changed: $($input.path). Regenerate the game."
+        }
+    }
+}
+
 function Assert-Rom {
     param([Parameter(Mandatory = $true)][string] $Path)
     Assert-File -Path $Path -Label "ROM"

@@ -124,16 +124,19 @@ pwsh scripts/build-runner.ps1
 Release packages are created with:
 
 ```powershell
-pwsh scripts/package-release.ps1 -Version 0.1.7
+pwsh scripts/package-release.ps1 -Version 0.1.8
 ```
 
 The package script uses a whitelist and must not include ROMs, BIOS dumps, save
 files, caches, logs, generated objects, or local configuration.
 
-Configure `BiosPath` and `RomPath` in `config/project.local.ps1`, or pass them
-explicitly. Packaging tests the staged executable in isolation through 1,200
-frames of boot and another 1,200 frames after reopening its test save. Logs
-remain in `build/validation/`. This does not replace manual gameplay testing.
+Configure `BiosPath`, `RomPath`, and `MingwBin` in `config/project.local.ps1`, or
+pass them explicitly. Source generation needs Python 3 and builds its compiler
+from the pinned GBARecomp sources. Runner builds reject outdated generation.
+
+Packaging tests staged binaries in isolation: boot, SRAM-file reload, explicit
+save paths, locked-save recovery, and 3,600 frames with menu input. Logs remain
+in `build/validation/`. This does not replace manual gameplay testing.
 
 ## Legal
 

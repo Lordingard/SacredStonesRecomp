@@ -1,5 +1,19 @@
 # Release Notes
 
+## v0.1.8 - 2026-10-05
+
+- Preserve both the previous SRAM save and its temporary recovery file when
+  replacement fails, including a Windows file lock.
+- Honor explicit `--save` and `--save-path` destinations through launcher startup
+  without migrating or modifying the default save.
+- Generate game code with the pinned framework and verify source/input provenance
+  before runner builds.
+- Enable static game resume coverage; the previously failing 3,600-frame menu
+  input test now passes with no interpreter or compiler fallback.
+- Packaging tests boot, reload, save overrides, locked-save recovery, and menu
+  input. A separate 1,200-frame windowed replay checks presentation and coverage.
+- The user validated the local v0.1.8 archive before publication.
+
 ## v0.1.7 - 2026-10-05
 
 - Fix the crash after the Game Boy Advance logo by using the pinned BIOS

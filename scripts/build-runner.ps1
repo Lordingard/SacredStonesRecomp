@@ -8,14 +8,6 @@ param(
 
 . "$PSScriptRoot/common.ps1"
 
-function Resolve-RepoPath {
-    param([Parameter(Mandatory = $true)][string] $Path)
-    if ([System.IO.Path]::IsPathRooted($Path)) {
-        return [System.IO.Path]::GetFullPath($Path)
-    }
-    return [System.IO.Path]::GetFullPath((Join-Path $script:RepoRoot $Path))
-}
-
 $resolvedBuildDir = Resolve-RepoPath $BuildDir
 $resolvedGeneratedProject = Resolve-RepoPath (Resolve-Setting $GeneratedProjectPath "SACREDSTONES_RECOMP_OUTPUT" "GeneratedProjectPath" $script:DefaultGeneratedProject)
 $resolvedBiosPath = Resolve-Setting $BiosPath "GBA_BIOS" "BiosPath" ""
@@ -41,6 +33,7 @@ $mingwCxx = (Join-Path $resolvedMingwBin "c++.exe").Replace('\', '/')
 $mingwCc = (Join-Path $resolvedMingwBin "cc.exe").Replace('\', '/')
 Assert-File -Path (Join-Path $resolvedGeneratedProject "CMakeLists.txt") -Label "Generated GBARecomp project"
 Assert-File -Path (Join-Path $resolvedGeneratedProject "generated/dispatch_table.cpp") -Label "Generated dispatch table"
+Assert-GenerationProvenance -Project $resolvedGeneratedProject
 
 $env:PATH = "$resolvedMingwBin;$env:PATH"
 

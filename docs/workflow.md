@@ -17,11 +17,12 @@ pwsh scripts/bootstrap.ps1 -WriteLocalConfig
 
 The default local paths are:
 
-- GBARecomp CLI: `D:\Jeux\GBARecomp\gbarecomp.exe`
+- GBARecomp generator: built locally from `extern/gbarecomp` into `build/generator-mingw`
 - FE8 US ROM: sibling of this repo, `..\Fire Emblem - The Sacred Stones (U).gba`
 
-Override them with parameters, environment variables, or
-`config/project.local.ps1`.
+Configure ROM, BIOS, and MinGW paths with parameters, environment variables, or
+`config/project.local.ps1`. Source generation requires Python 3. External
+`GBARECOMP_EXE` and legacy `GbaRecompExe` local settings are no longer used.
 
 ## Runtime Dependency Updates
 
@@ -61,19 +62,29 @@ requires `BiosPath` (or `GBA_BIOS`) and regenerates BIOS output using the pinned
 return entries and caused the v0.1.6 startup crash. Generated files stay ignored.
 Build parallelism defaults to two jobs; use `-Jobs` to change it.
 
+The generator is built from the same pinned framework as the runtime.
+Generation records both framework revisions, source fingerprints, and ROM,
+annotation, and symbol-input hashes in the ignored
+`.generated/gbarecomp/sacredstones-generation.json`. Runner builds reject changes
+to these inputs until the game is regenerated. Full static resume entries are
+enabled in `config/game.fe8u.toml` to cover frame-boundary and interrupt returns.
+
 ## Release validation
 
-Run `pwsh scripts/test-release.ps1` for isolated boot and SRAM-file reload tests.
-`scripts/package-release.ps1 -Version 0.1.7` runs the same tests against its staged
+Run `pwsh scripts/test-release.ps1 -ExtendedInput` for isolated boot, SRAM-file
+reload, save overrides, locked-save recovery, and input tests.
+`scripts/package-release.ps1 -Version 0.1.8` runs these tests against its staged
 files before creating the archive. Both accept `-BiosPath` and `-RomPath`.
 Each run preserves logs and disposable saves in a unique `build/validation/`
 directory, with developer compiler directories removed from the child PATH.
 
-The optional `-ExtendedInput` test presses menu buttons for 3,600 headless frames
-and enforces static coverage. It currently exposes guest resume coverage gaps and
-the unavailable TCC fallback in the packaged distribution; see
-[the code review](review-2026-10-05.md). Boot tests do not certify slot contents,
-combat, rewind, or controller behavior. Check those manually before publishing.
+The `-ExtendedInput` test presses menu buttons for 3,600 headless frames and
+enforces static coverage. `-WindowedInput` adds a 1,200-frame windowed replay.
+Use `scripts/test-generation-provenance.ps1` to test stale-generation rejection.
+Build target `sacredstones_save_file_tests` and run it with an isolated directory
+argument to test native file replacement, including a locked destination.
+These checks do not certify slot contents, combat, rewind, or physical controller
+behavior. Check those manually before publishing.
 
 ## Symbol import
 

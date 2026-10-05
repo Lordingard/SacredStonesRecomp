@@ -102,7 +102,10 @@ std::filesystem::path rom_named_save_path(const std::filesystem::path& dir,
 
 void ensure_save_directory(const std::filesystem::path& target) {
     std::error_code ec;
-    std::filesystem::create_directories(target.parent_path(), ec);
+    if (!target.parent_path().empty())
+        std::filesystem::create_directories(target.parent_path(), ec);
+    if (ec) std::fprintf(stderr, "save_directory_failed path=\"%s\" error=%s\n",
+                         target.parent_path().string().c_str(), ec.message().c_str());
 }
 void migrate_legacy_save_if_needed(const std::vector<std::string>& args,
                                    const std::filesystem::path& target) {
@@ -174,7 +177,17 @@ int main(int argc, char** argv) {
     if (!args.empty()) args[0] = executable_path(args).string();
     force_fe8_save_type();
 
+    bool explicit_save = false;
     std::string save_path = exe_local_save_path(args).string();
+    for (std::size_t i = 1; i < args.size(); ++i) {
+        if (args[i] != "--save" && args[i] != "--save-path") continue;
+        if (i + 1 == args.size() || args[i + 1].empty() || args[i + 1].compare(0, 2, "--") == 0) {
+            std::fprintf(stderr, "missing value for %s\n", args[i].c_str());
+            return 1;
+        }
+        explicit_save = true;
+        save_path = args[++i];
+    }
     opts.launcher_save_path = save_path.c_str();
 
     force_exe_local_config(args);
@@ -186,7 +199,7 @@ int main(int argc, char** argv) {
     force_exe_local_config(args);
     force_save_path(args, save_path);
     ensure_save_directory(save_path);
-    migrate_legacy_save_if_needed(args, save_path);
+    if (!explicit_save) migrate_legacy_save_if_needed(args, save_path);
 
 
     std::vector<char*> av;
