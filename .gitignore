@@ -42,6 +42,9 @@ cmake_install.cmake
 /sacredstonesrecomp-bios.cfg
 /rom.cfg
 /bios.cfg
+/launcher-window.ini
+/runtime-controls.toml
+/runtime-controls.toml.tmp.*
 /saves/
 
 # Editor and OS noise

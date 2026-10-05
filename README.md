@@ -34,8 +34,11 @@ Working now:
 - Integrated pre-boot launcher with ROM and BIOS selection plus box art.
 - Play prompts for a missing or invalid BIOS.
 - Remembered input-device selection, with safe fallback when a controller is absent.
+- Remembered launcher window size, with a 940x799 default and fitting to smaller displays.
 - Correct FE8 SRAM save/load configuration.
-- Save states and rewind.
+- In-game settings menu with state slots 1-9, save/load, and fast-forward controls.
+- Fast-forward speed from 2x to 10x and independently switchable rewind.
+- Remembered speed, rewind/Assist Tools enable switches, and selected state slot.
 - Xbox-compatible controller support through SDL.
 - User-provided GBA BIOS support for correct boot, timing, and interrupt behavior.
 - Quiet project builds: generated/framework warning noise is filtered from the
@@ -45,6 +48,7 @@ Known limitations:
 
 - Windows is the only packaged target for now.
 - Mods are not currently exposed.
+- The supported game ROM and launcher are in English; translation is not planned.
 - The game has not yet been exhaustively tested from start to finish.
 
 Current maintenance priorities:
@@ -53,14 +57,13 @@ Current maintenance priorities:
 - Evaluate upstream CPU timing improvements separately, with boot, gameplay,
   battery-save, save-state, and rewind regression checks.
 
-Version 0.1.9 includes the selected upstream update that makes costly diagnostic
-captures opt-in, while preserving the project's save-safety fixes. Automated
-boot, SRAM-file reload, save-path, locked-save recovery, input, and diagnostic
-tests pass, including windowed replays and a missing-controller fallback.
-The maintainer also validated gameplay, fast-forward, in-game saves, save states,
-rewind, the BIOS picker, and controller-selection persistence. This is not a
-claim of exhaustive start-to-finish coverage. Further upstream launcher and CPU
-timing updates remain planned.
+Version 0.1.10 adds the in-game menu, persistent runtime controls, and targeted
+launcher window/navigation fixes. It retains the optimized builds, opt-in
+diagnostics, BIOS picker, controller persistence, and save-safety fixes from
+earlier versions. Automated checks cover boot, SRAM reload, save overrides,
+locked-file recovery, windowed input, diagnostics, and preference loading.
+The maintainer validated the new menu controls and corrected layout, alongside
+previous gameplay checks. This is not exhaustive start-to-finish coverage.
 
 ## What Static Recompilation Means Here
 
@@ -82,7 +85,7 @@ The runtime validates the ROM SHA-1 and refuses unrecognized ROMs.
 
 ## Quick Start
 
-1. Download [SacredStonesRecomp-0.1.9-win64.zip](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.9/SacredStonesRecomp-0.1.9-win64.zip)
+1. Download [SacredStonesRecomp-0.1.10-win64.zip](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.10/SacredStonesRecomp-0.1.10-win64.zip)
    from the release's **Assets** section and extract it. The **Source code**
    archives are for developers, not the playable package.
 2. Run `SacredStonesRecomp.exe`.
@@ -119,17 +122,54 @@ Default assist bindings:
 - Fast-forward: hold `2` on keyboard or the right trigger on an Xbox-compatible
   controller.
 
+## In-Game Menu
+
+Press **Escape** or the controller **Guide/Xbox** button to open the menu.
+Some drivers or Windows shortcuts reserve Guide; Escape remains available.
+Use the mouse or D-pad/arrows to navigate, A/Enter to confirm, and B/Escape to
+go back. Resume returns to gameplay.
+
+- Select **State slot** (1-9), then **Save state** or **Load state**.
+- Set **Fast-forward speed** (2x-10x). Hold the usual shortcut or use the
+  **Fast-forward** menu toggle; acceleration itself is not restored on restart.
+- **Enable rewind** controls the temporary history independently. Turning it
+  off discards that history; after re-enabling, wait for new history to build.
+- **Assist Tools** enables/disables save-state, fast-forward, and rewind controls
+  together. It does not disable the game's own battery save.
+- Display/audio settings include fullscreen, window scale, filtering, volume,
+  audio enable, and the FPS readout. These adjustments are session settings;
+  only the runtime preferences listed below are persisted by this menu.
+
+State slot, fast-forward speed, and the rewind/Assist Tools enable switches
+are saved immediately. Savestates are snapshots, separate from the game's save
+slots; rewind history is temporary and is not restored after closing the game.
+
 ## Saves And Runtime State
 
 Runtime files are local to the extracted folder:
 
 - Battery save: `saves/SacredStonesRecomp.sav`
+- Save states: beside the selected ROM, `<ROM filename>.state1` through `.state9`
 - Launcher settings: `sacredstonesrecomp.ini`
+- Launcher window dimensions: `launcher-window.ini`
+- In-game control preferences: `runtime-controls.toml`
+- Keyboard bindings: `keybinds.ini`
 - ROM picker cache: `sacredstonesrecomp-rom.cfg`
 - BIOS picker cache: `sacredstonesrecomp-bios.cfg`
 - Self-heal cache and diagnostics: `recomp_cache/` and `recomp_coverage_*.json`
 
 These files are intentionally excluded from source control and release archives.
+
+When updating, close the game and extract the new binary archive into the
+existing folder. Keep `saves/` and your settings files; the archive contains no
+player saves or preferences. Back up `saves/` and any savestates beside your ROM
+before replacing an installation. Savestates keep their existing ROM-based
+location; only the internal battery save has the standardized name above.
+
+Missing/invalid preference values use defaults. If `runtime-controls.toml` is
+malformed or cannot be updated, the game stays usable and reports the problem
+in the console. After closing the game, rename that file to reset the runtime
+preferences; this does not remove battery saves or savestates.
 
 ## How It Self-Improves
 
@@ -162,7 +202,7 @@ pwsh scripts/build-runner.ps1
 Release packages are created with:
 
 ```powershell
-pwsh scripts/package-release.ps1 -Version 0.1.9
+pwsh scripts/package-release.ps1 -Version 0.1.10
 ```
 
 The package script uses a whitelist and must not include ROMs, BIOS dumps, save

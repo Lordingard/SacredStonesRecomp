@@ -1,5 +1,32 @@
 # Release Notes
 
+## v0.1.10 - 2026-10-05
+
+- Enable the existing GBARecomp in-game menu through SDL_Renderer2 without
+  changing game rendering, CPU timing, BIOS policy, or save formats.
+- Open the menu with Escape or the controller Guide button. Expose slots 1-9,
+  save/load actions, fast-forward toggle/speed (2x-10x), and rewind controls.
+- Add an independent rewind enable switch; disabling clears temporary history
+  and stops captures, while internal saves and other assist controls remain usable.
+- Persist the selected state slot, fast-forward multiplier, and rewind/Assist
+  Tools enable switches in executable-local `runtime-controls.toml`. Do not
+  persist active fast-forward or rewind history.
+- Parse preferences with pinned toml++, preserve unknown keys, and replace files
+  atomically. Invalid preferences fall back safely; failed replacement retains
+  the original and a temporary recovery copy.
+- Keep gameplay inputs available when the menu is closed.
+- Remember launcher dimensions; use the maintainer's accepted 940x799 default
+  and fit initial dimensions to smaller displays. Keep existing user sizes.
+- Apply selected upstream focus and small-display fixes, retaining our BIOS
+  picker and controller-selection behavior.
+- Wrap runtime menu labels/descriptions in a dedicated text column to avoid
+  overlap with slot/speed step buttons; grow row height for multiline text.
+- Extend tests for input ownership, runtime layout, preference round trips,
+  accented paths, locked files, and startup from another working directory.
+- Update the user-facing README with the new menu, persistent settings, update
+  instructions, and existing keyboard/controller features. The game and launcher
+  remain in English; localization is intentionally deferred.
+
 ## v0.1.9 - 2026-10-05
 
 - Rebuild from an isolated clean clone with all pinned dependencies downloaded

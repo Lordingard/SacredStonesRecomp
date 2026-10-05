@@ -35,8 +35,9 @@ if ($DiagnosticCapture) {
     $scenarios += 'diagnostics'
     if ($WindowedInput) { $scenarios += 'window-diagnostics' }
 }
+if ($WindowedInput) { $scenarios += @('window-controls', 'window-controls-invalid') }
 foreach ($scenario in $scenarios) {
-    $windowed = $scenario -in @('window-input', 'window-diagnostics', 'window-missing-controller')
+    $windowed = $scenario -in @('window-input', 'window-diagnostics', 'window-missing-controller', 'window-controls', 'window-controls-invalid')
     $diagnostics = $scenario -in @('diagnostics', 'window-diagnostics')
     $frames = if ($scenario -eq 'input') { 3600 } else { 1200 }
     $defaultSave = Join-Path $testRoot 'saves/SacredStonesRecomp.sav'
@@ -52,6 +53,17 @@ foreach ($scenario in $scenarios) {
     $info = [Diagnostics.ProcessStartInfo]::new()
     $info.FileName = Join-Path $testRoot 'SacredStonesRecomp.exe'
     $info.WorkingDirectory = $testRoot
+    if ($scenario -in @('window-controls', 'window-controls-invalid')) {
+        $controlsPath = Join-Path $testRoot 'runtime-controls.toml'
+        $content = if ($scenario -eq 'window-controls') {
+            "fast_forward_multiplier = 7`nrewind_enabled = false`nstate_slot = 8`nassist_tools_enabled = true`n"
+        } else { 'invalid = [' }
+        [IO.File]::WriteAllText($controlsPath, $content)
+        $controlsHash = (Get-FileHash -LiteralPath $controlsPath).Hash
+        $otherCwd = Join-Path $testRoot 'different-working-directory'
+        [IO.Directory]::CreateDirectory($otherCwd) | Out-Null
+        $info.WorkingDirectory = $otherCwd
+    }
     $info.UseShellExecute = $false
     $info.CreateNoWindow = $true
     $info.RedirectStandardOutput = $true
@@ -145,6 +157,18 @@ foreach ($scenario in $scenarios) {
         }
         if ($windowed -and $log -notmatch "frames_presented=$frames\b") {
             throw "Windowed replay did not present the requested frames. Log: $logPath"
+        }
+        if ($scenario -eq 'window-controls' -and
+            $log -notmatch 'runtime_controls_loaded speed=7 rewind=0 slot=8 assist=1') {
+            throw "Executable-local controls did not reload from another working directory. Log: $logPath"
+        }
+        if ($scenario -eq 'window-controls-invalid' -and
+            $log -notmatch 'invalid runtime-controls TOML; using defaults') {
+            throw "Invalid controls did not fall back safely. Log: $logPath"
+        }
+        if ($scenario -in @('window-controls', 'window-controls-invalid') -and
+            (Get-FileHash -LiteralPath $controlsPath).Hash -ne $controlsHash) {
+            throw "Loading controls unexpectedly modified the file. Log: $logPath"
         }
         if ($scenario -eq 'window-missing-controller' -and
             $log -notmatch 'preferred controller unavailable; using available input') {

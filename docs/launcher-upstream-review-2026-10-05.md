@@ -49,5 +49,29 @@ regressions, followed by visual and maintainer validation of the launcher.
   Play-to-BIOS-picker behavior rather than importing the upstream Settings-only
   required-BIOS flow (`796c513`).
 
-No candidate patch has been integrated by this review. The v0.1.9 binary and its
-validated dependency pins remain unchanged.
+## First implementation batch
+
+The three recommended window/navigation changes have now been applied to the
+local launcher fork as a candidate, without changing game-runtime source or
+the published v0.1.9. Cherry-pick conflicts were resolved without importing
+unrelated NDS tests or newer SNES settings infrastructure. The project's
+commit-on-Quit and Play-to-BIOS-picker behavior are retained.
+
+The upstream real-ImGui navigation test passes. The project policy test now
+covers geometry round trips, malformed dimensions, path capacity, and parsing,
+alongside BIOS policy and controller persistence. The Release runner builds.
+Scripted captures in `build/launcher-candidate-validation/` verify an 820x656
+initial fit for a simulated 1280x720 usable area, reopening at a saved 1000x700,
+and refitting a saved 1100x880 after moving to the smaller area. Dashboard and
+settings were visually checked. These simulations are not a physical
+multi-monitor/high-DPI certification.
+
+All eleven existing runtime regression scenarios passed on the rebuilt
+candidate with extended input, windowed input, and diagnostic capture. Logs:
+`build/validation/3e1bff39679148549fd780a7d80f457e/`.
+
+The subsequent runtime-control integration, persistent preferences, and menu
+layout correction are recorded in `runtime-menu-candidate.md` and included in
+v0.1.10. The maintainer accepted the UI and publication. French localization is
+intentionally deferred while the supported ROM is English-only. No unrelated
+upstream console/network changes were imported.

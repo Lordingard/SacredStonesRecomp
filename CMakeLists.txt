@@ -18,6 +18,8 @@ if(MINGW AND CMAKE_CXX_COMPILER AND NOT DEFINED GBARECOMP_MINGW_RUNTIME_BIN)
     set(GBARECOMP_MINGW_RUNTIME_BIN "${_sacredstones_mingw_bin}" CACHE PATH "Directory containing MinGW runtime DLLs for development builds")
 endif()
 
+set(RECOMP_UI_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/extern/recomp-ui" CACHE PATH "Path to recomp-ui launcher checkout")
+set(GBARECOMP_RUNTIME_UI_ROOT "${RECOMP_UI_ROOT}")
 add_subdirectory("${GBARECOMP_ROOT}" "${CMAKE_BINARY_DIR}/gbarecomp-core" EXCLUDE_FROM_ALL)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     foreach(_gbarecomp_noisy_target IN ITEMS
@@ -107,9 +109,13 @@ if(COMMAND gbarecomp_stage_mingw_runtime)
 endif()
 
 add_executable(sacredstones_save_file_tests EXCLUDE_FROM_ALL tests/save_file_test.cpp)
+add_executable(sacredstones_runtime_controls_tests EXCLUDE_FROM_ALL tests/runtime_controls_test.cpp)
+target_include_directories(sacredstones_runtime_controls_tests PRIVATE "${GBARECOMP_ROOT}/src/runtime")
+target_link_libraries(sacredstones_runtime_controls_tests PRIVATE gbarecomp_runtime_preferences)
 target_include_directories(sacredstones_save_file_tests PRIVATE "${GBARECOMP_ROOT}/src/runtime")
 
 if(MINGW)
+    find_package(SDL2 REQUIRED)
     add_executable(sacredstones_launcher_policy_tests EXCLUDE_FROM_ALL
         tests/launcher_policy_test.cpp
         "${RECOMP_UI_ROOT}/src/common/launcher_model.c"
@@ -118,7 +124,8 @@ if(MINGW)
         "${RECOMP_UI_ROOT}/src/common/sha1.c"
         "${RECOMP_UI_ROOT}/src/common/ips_patch.c"
         "${RECOMP_UI_ROOT}/src/consoles/psx/memcard_format.c")
-    target_compile_definitions(sacredstones_launcher_policy_tests PRIVATE RECOMP_LAUNCHER)
+    target_compile_definitions(sacredstones_launcher_policy_tests PRIVATE RECOMP_LAUNCHER SDL_MAIN_HANDLED)
+    target_link_libraries(sacredstones_launcher_policy_tests PRIVATE SDL2::SDL2)
     target_include_directories(sacredstones_launcher_policy_tests PRIVATE
         "${GBARECOMP_ROOT}/src/runtime" "${GBARECOMP_ROOT}/src/armv4t"
         "${RECOMP_UI_ROOT}/src" "${RECOMP_UI_ROOT}/src/common")
