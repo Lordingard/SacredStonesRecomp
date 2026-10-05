@@ -4,7 +4,8 @@ param(
     [string] $BiosPath,
     [ValidateRange(1, 600)][int] $TimeoutSeconds = 60,
     [switch] $ExtendedInput,
-    [switch] $WindowedInput
+    [switch] $WindowedInput,
+    [switch] $DiagnosticCapture
 )
 
 . "$PSScriptRoot/common.ps1"
@@ -29,7 +30,14 @@ foreach ($name in @('SacredStonesRecomp.exe', 'SDL2.dll', 'libgcc_s_seh-1.dll', 
 $scenarios = @('boot', 'reload', 'save-path', 'save-alias', 'save-relative', 'locked-save')
 if ($ExtendedInput) { $scenarios += 'input' }
 if ($WindowedInput) { $scenarios += 'window-input' }
+if ($WindowedInput) { $scenarios += 'window-missing-controller' }
+if ($DiagnosticCapture) {
+    $scenarios += 'diagnostics'
+    if ($WindowedInput) { $scenarios += 'window-diagnostics' }
+}
 foreach ($scenario in $scenarios) {
+    $windowed = $scenario -in @('window-input', 'window-diagnostics', 'window-missing-controller')
+    $diagnostics = $scenario -in @('diagnostics', 'window-diagnostics')
     $frames = if ($scenario -eq 'input') { 3600 } else { 1200 }
     $defaultSave = Join-Path $testRoot 'saves/SacredStonesRecomp.sav'
     $save = $defaultSave
@@ -53,8 +61,25 @@ foreach ($scenario in $scenarios) {
     }
     $info.Environment['PATH'] = "$env:SystemRoot\System32;$env:SystemRoot"
     $info.Environment['GBARECOMP_DEBUG_BOOT'] = '1'
+    if ($scenario -eq 'window-missing-controller') {
+        $info.Environment['GBARECOMP_CONTROLLER_GUID'] = 'ffffffffffffffffffffffffffffffff'
+    }
+    $mmioDump = Join-Path $testRoot "$scenario-mmio.csv"
+    $phaseDump = Join-Path $testRoot "$scenario-phase.csv"
+    $cadenceDump = Join-Path $testRoot "$scenario-cadence.csv"
+    if ($diagnostics) {
+        $info.Environment['GBARECOMP_RUNTIME_TRACE'] = '1'
+        $info.Environment['GBARECOMP_MMIO_DUMP'] = $mmioDump
+        $info.Environment['GBARECOMP_AUDIO_FIFO_TRACE'] = '1'
+        $info.Environment['GBARECOMP_HANG_WATCHDOG'] = '1'
+        if ($windowed) {
+            $info.Environment['GBARECOMP_FRAME_PHASE'] = $phaseDump
+            $info.Environment['GBARECOMP_PRESENT_CADENCE'] = '1'
+            $info.Environment['GBARECOMP_PRESENT_CADENCE_DUMP'] = $cadenceDump
+        }
+    }
     if ($scenario -eq 'input') { $info.Environment['GBARECOMP_DEMO_INPUT'] = 'menu' }
-    if ($scenario -eq 'window-input') {
+    if ($windowed) {
         $trace = Join-Path $testRoot 'window-input.csv'
         $buttons = @(8, 1, 1, 128, 1, 16, 2, 1, 32, 1, 64, 2)
         $events = for ($frame = 0; $frame -le $frames; $frame += 6) {
@@ -67,7 +92,7 @@ foreach ($scenario in $scenarios) {
         $info.Environment['GBARECOMP_INPUT_REPLAY'] = $trace
     }
     $runArgs = @('--bios', $resolvedBios, '--frames', "$frames")
-    if ($scenario -eq 'window-input') { $runArgs += '--window' }
+    if ($windowed) { $runArgs += '--window' }
     $runArgs += @('--rom', $resolvedRom)
     if ($scenario -in @('save-path', 'save-alias', 'save-relative', 'locked-save')) {
         $save = Join-Path $testRoot "alternate/$scenario.sav"
@@ -112,14 +137,18 @@ foreach ($scenario in $scenarios) {
             continue
         }
         if ($timedOut -or $process.ExitCode -ne 0) { throw "Release $scenario failed or timed out. Log: $logPath" }
-        if (($scenario -ne 'window-input' -and $log -notmatch 'bios_backend=LLE') -or
+        if ((-not $windowed -and $log -notmatch 'bios_backend=LLE') -or
             $log -notmatch "ppu_frames=$frames\b" -or
             $log -notmatch 'self_heal_coverage=FULLY_STATIC dispatch_misses=0 interpreted_insns=0' -or
             $log -match 'compile FAILED|hang-watchdog|SELF-HEAL bridge hit') {
             throw "Release $scenario failed runtime checks. Log: $logPath"
         }
-        if ($scenario -eq 'window-input' -and $log -notmatch "frames_presented=$frames\b") {
+        if ($windowed -and $log -notmatch "frames_presented=$frames\b") {
             throw "Windowed replay did not present the requested frames. Log: $logPath"
+        }
+        if ($scenario -eq 'window-missing-controller' -and
+            $log -notmatch 'preferred controller unavailable; using available input') {
+            throw "Missing-controller fallback was not exercised. Log: $logPath"
         }
         if ($scenario -eq 'reload' -and $log -notmatch 'save_loaded .*size=32768/32768') {
             throw "Release did not reload SRAM. Log: $logPath"
@@ -129,6 +158,20 @@ foreach ($scenario in $scenarios) {
         }
         if ($save -ne $defaultSave -and (Get-FileHash -LiteralPath $defaultSave).Hash -ne $defaultHash) {
             throw "Explicit save path modified the default save. Log: $logPath"
+        }
+        if ($diagnostics) {
+            if (-not (Test-Path -LiteralPath $mmioDump) -or
+                @(Get-Content -LiteralPath $mmioDump -TotalCount 2).Count -lt 2) {
+                throw "Enabled MMIO capture produced no records. Log: $logPath"
+            }
+            if ($windowed -and (-not (Test-Path -LiteralPath $phaseDump) -or
+                @(Get-Content -LiteralPath $phaseDump -TotalCount 2).Count -lt 2)) {
+                throw "Enabled frame-phase capture produced no records. Log: $logPath"
+            }
+            if ($windowed -and (-not (Test-Path -LiteralPath $cadenceDump) -or
+                @(Get-Content -LiteralPath $cadenceDump -TotalCount 2).Count -lt 2)) {
+                throw "Enabled present-cadence capture produced no records. Log: $logPath"
+            }
         }
         Write-Host "PASS: $scenario ($frames frames). Log: $logPath"
     } finally {

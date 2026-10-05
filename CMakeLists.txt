@@ -108,3 +108,20 @@ endif()
 
 add_executable(sacredstones_save_file_tests EXCLUDE_FROM_ALL tests/save_file_test.cpp)
 target_include_directories(sacredstones_save_file_tests PRIVATE "${GBARECOMP_ROOT}/src/runtime")
+
+if(MINGW)
+    add_executable(sacredstones_launcher_policy_tests EXCLUDE_FROM_ALL
+        tests/launcher_policy_test.cpp
+        "${RECOMP_UI_ROOT}/src/common/launcher_model.c"
+        "${RECOMP_UI_ROOT}/src/common/crc32.c"
+        "${RECOMP_UI_ROOT}/src/common/sha256.c"
+        "${RECOMP_UI_ROOT}/src/common/sha1.c"
+        "${RECOMP_UI_ROOT}/src/common/ips_patch.c"
+        "${RECOMP_UI_ROOT}/src/consoles/psx/memcard_format.c")
+    target_compile_definitions(sacredstones_launcher_policy_tests PRIVATE RECOMP_LAUNCHER)
+    target_include_directories(sacredstones_launcher_policy_tests PRIVATE
+        "${GBARECOMP_ROOT}/src/runtime" "${GBARECOMP_ROOT}/src/armv4t"
+        "${RECOMP_UI_ROOT}/src" "${RECOMP_UI_ROOT}/src/common")
+    target_compile_options(sacredstones_launcher_policy_tests PRIVATE -ffunction-sections -fdata-sections)
+    target_link_options(sacredstones_launcher_policy_tests PRIVATE -Wl,--gc-sections)
+endif()

@@ -1,12 +1,13 @@
 # SacredStonesRecomp - Fire Emblem: The Sacred Stones, Recompiled
 
-> This is an in-development static recompilation preview, not a finished PC port.
+> This is a playable, actively maintained static recompilation, not a finished PC port.
 > It is already playable, but the project is still early and the runtime will keep
 > improving. Testing reports and focused bug reproductions are useful.
 
 Static recompilation of *Fire Emblem: The Sacred Stones* (Game Boy Advance) to a
 native Windows executable, built on a pinned [`gbarecomp`](https://github.com/Lordingard/gbarecomp/tree/sacred-stones-runtime)
-runtime fork with the [`recomp-ui`](https://github.com/mstan/recomp-ui) launcher.
+runtime fork with a pinned [`recomp-ui`](https://github.com/Lordingard/recomp-ui/tree/sacred-stones-launcher)
+launcher fork. Both retain their upstream projects' code and licenses.
 
 ## AI-Assisted Development
 
@@ -15,10 +16,10 @@ code changes, runtime integration, debugging, code review, build tooling, and
 documentation. The maintainer directs the work, makes project decisions, and
 tests releases through gameplay, alongside automated checks.
 
-This describes the work on SacredStonesRecomp and its runtime fork; it does not
+This describes the work on SacredStonesRecomp and its dependency forks; it does not
 attribute AI use to the upstream projects or the original game.
 
-## Status - Playable Preview
+## Status - Playable, In Active Development
 
 The game boots through the launcher and is playable into normal gameplay. The
 major visible issues found during early testing have been resolved or confirmed
@@ -26,7 +27,10 @@ to match original/emulator behavior.
 
 Working now:
 
+- Optimized Windows Release builds for the game and runtime.
 - Integrated pre-boot launcher with ROM and BIOS selection plus box art.
+- Play prompts for a missing or invalid BIOS.
+- Remembered input-device selection, with safe fallback when a controller is absent.
 - Correct FE8 SRAM save/load configuration.
 - Save states and rewind.
 - Xbox-compatible controller support through SDL.
@@ -38,8 +42,23 @@ Known limitations:
 
 - A very small audio artifact may be heard at the very beginning of the intro.
 - Windows is the only packaged target for now.
-- Mods are not exposed in this preview.
+- Mods are not currently exposed.
 - The game has not yet been exhaustively tested from start to finish.
+
+Current maintenance priorities:
+
+- Evaluate further upstream launcher improvements independently.
+- Evaluate upstream CPU timing improvements separately, with boot, gameplay,
+  battery-save, save-state, and rewind regression checks.
+
+Version 0.1.9 includes the selected upstream update that makes costly diagnostic
+captures opt-in, while preserving the project's save-safety fixes. Automated
+boot, SRAM-file reload, save-path, locked-save recovery, input, and diagnostic
+tests pass, including windowed replays and a missing-controller fallback.
+The maintainer also validated gameplay, fast-forward, in-game saves, save states,
+rewind, the BIOS picker, and controller-selection persistence. This is not a
+claim of exhaustive start-to-finish coverage. Further upstream launcher and CPU
+timing updates remain planned.
 
 ## What Static Recompilation Means Here
 
@@ -61,7 +80,9 @@ The runtime validates the ROM SHA-1 and refuses unrecognized ROMs.
 
 ## Quick Start
 
-1. Download the latest `SacredStonesRecomp-*-win64.zip` release and extract it.
+1. Download [SacredStonesRecomp-0.1.9-win64.zip](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.9/SacredStonesRecomp-0.1.9-win64.zip)
+   from the release's **Assets** section and extract it. The **Source code**
+   archives are for developers, not the playable package.
 2. Run `SacredStonesRecomp.exe`.
 3. Select your legally obtained GBA BIOS when prompted.
 4. Select your legally obtained *Fire Emblem: The Sacred Stones* USA ROM when
@@ -70,6 +91,11 @@ The runtime validates the ROM SHA-1 and refuses unrecognized ROMs.
 
 The selected BIOS and ROM paths are cached next to the executable for future launches.
 Keep the extracted folder together when moving the game.
+
+Play opens the BIOS picker if no valid BIOS is configured.
+After selecting it, press Play again. The preferred controller is remembered;
+if it is disconnected, the game falls back to available input without discarding
+the preference. Keyboard controls remain available.
 
 ## Controls
 
@@ -110,7 +136,7 @@ not part of the static corpus, the runtime can bridge it safely, compile a nativ
 replacement in-process, and cache that result under `recomp_cache/<rom-sha1>/`.
 The next launch can reuse the warmed path.
 
-For the current FE8 preview, the tested startup path reports `FULLY_STATIC`, so
+For the current FE8 build, the tested startup path reports `FULLY_STATIC`, so
 normal boot does not need a warmed cache. The cache still remains useful as the
 project explores more of the game and closes rare coverage gaps.
 
@@ -134,7 +160,7 @@ pwsh scripts/build-runner.ps1
 Release packages are created with:
 
 ```powershell
-pwsh scripts/package-release.ps1 -Version 0.1.8
+pwsh scripts/package-release.ps1 -Version 0.1.9
 ```
 
 The package script uses a whitelist and must not include ROMs, BIOS dumps, save

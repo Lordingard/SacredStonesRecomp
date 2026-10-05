@@ -3,7 +3,8 @@ param(
     [string] $GeneratedProjectPath,
     [string] $BiosPath,
     [string] $MingwBin,
-    [ValidateRange(1, 64)][int] $Jobs = 2
+    [ValidateRange(1, 64)][int] $Jobs = 2,
+    [ValidateSet('Release', 'RelWithDebInfo', 'Debug')][string] $BuildType = 'Release'
 )
 
 . "$PSScriptRoot/common.ps1"
@@ -42,7 +43,7 @@ $generatedLib = Join-Path $generatedBuildDir "libgbarecomp_game.a"
 $generatedBiosDir = Join-Path $resolvedBuildDir "generated-bios"
 
 Write-Host "Configuring generated game library: $generatedBuildDir"
-& cmake -S $resolvedGeneratedProject -B $generatedBuildDir -G Ninja "-DCMAKE_CXX_COMPILER=$mingwCxx"
+& cmake -S $resolvedGeneratedProject -B $generatedBuildDir -G Ninja "-DCMAKE_CXX_COMPILER=$mingwCxx" "-DCMAKE_BUILD_TYPE=$BuildType"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host "Building generated game library with MinGW"
@@ -54,6 +55,7 @@ $cmakeArgs = @(
     "-S", $script:RepoRoot,
     "-B", $resolvedBuildDir,
     "-G", "Ninja",
+    "-DCMAKE_BUILD_TYPE=$BuildType",
     "-DCMAKE_C_COMPILER=$mingwCc",
     "-DCMAKE_CXX_COMPILER=$mingwCxx",
     "-U", "GBARECOMP_TOMLPP_INCLUDE_DIR",

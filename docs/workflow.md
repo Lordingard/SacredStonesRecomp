@@ -38,8 +38,11 @@ branch. To refresh it, update that branch in `Lordingard/gbarecomp`, rebuild thi
 project, verify boot and internal saves, then bump the submodule pointer in this
 repository.
 
-`extern/recomp-ui` remains a separate submodule because launcher UI updates can
-be evaluated independently from runtime changes.
+`extern/recomp-ui` remains a separate pinned submodule on the project fork's
+`sacred-stones-launcher` branch so launcher UI updates can be evaluated
+independently from runtime changes. Its upstream is `RetroPortingToolKit/recomp-ui`
+(formerly `mstan/recomp-ui`). Retain the required-BIOS prompt and input-preference
+fixes when updating that fork.
 
 ## Generate and build
 
@@ -61,6 +64,10 @@ requires `BiosPath` (or `GBA_BIOS`) and regenerates BIOS output using the pinned
 `extern/gbarecomp/bios/gba_bios.toml`. Omitting this configuration loses interrupt
 return entries and caused the v0.1.6 startup crash. Generated files stay ignored.
 Build parallelism defaults to two jobs; use `-Jobs` to change it.
+The runner and generated game library both default to optimized `Release`
+builds. Use `-BuildType RelWithDebInfo` for optimized debugging or
+`-BuildType Debug` for an unoptimized debug build. Changing the build type
+rebuilds the generated library as well as the runner.
 
 The generator is built from the same pinned framework as the runtime.
 Generation records both framework revisions, source fingerprints, and ROM,
@@ -73,7 +80,7 @@ enabled in `config/game.fe8u.toml` to cover frame-boundary and interrupt returns
 
 Run `pwsh scripts/test-release.ps1 -ExtendedInput` for isolated boot, SRAM-file
 reload, save overrides, locked-save recovery, and input tests.
-`scripts/package-release.ps1 -Version 0.1.8` runs these tests against its staged
+`scripts/package-release.ps1 -Version 0.1.9` runs these tests against its staged
 files before creating the archive. Both accept `-BiosPath` and `-RomPath`.
 Each run preserves logs and disposable saves in a unique `build/validation/`
 directory, with developer compiler directories removed from the child PATH.
@@ -85,6 +92,103 @@ Build target `sacredstones_save_file_tests` and run it with an isolated director
 argument to test native file replacement, including a locked destination.
 These checks do not certify slot contents, combat, rewind, or physical controller
 behavior. Check those manually before publishing.
+
+### Optimized Build Validation (2026-10-05)
+
+The default Release configuration was validated against the unchanged runtime
+and launcher pins. Both the runner and generated game library use `-O3 -DNDEBUG`.
+The previous executable was retained in `build/runner-mingw`; the optimized
+candidate is in `build/runner-release`.
+
+Passed: six isolated boot/save scenarios, 3,600 headless frames with menu input,
+1,200 windowed frames with replayed input, native locked-file replacement and
+recovery, and all four stale-generation rejection tests.
+
+Three alternating runs of the same 1,200-frame headless boot scenario took
+4.054/4.052/4.046 seconds for the previous executable and
+1.226/1.215/1.243 seconds for the Release candidate. Median elapsed time fell
+by about 70 percent. This measures unthrottled execution without display, not
+in-game FPS or end-to-end gameplay correctness.
+
+Regression logs: `build/validation/a3cf34ac84a047eda87ff6d0261f2ef5/`.
+Benchmark logs and measurements:
+`build/validation/benchmark-d8cd9065fdb04eeba4456d941d0f27d1/`.
+Manual combat, in-game save slots, save states, rewind, and controller validation
+remain required before publishing this candidate.
+
+### Opt-In Diagnostic Integration (2026-10-05)
+
+The initial optimized build was subsequently validated by the maintainer through
+gameplay and fast-forward. The next candidate, `build/runner-perf`, applies only
+upstream GBARecomp change `1ea864712561eed358882f48f53701ce4b078f79` and its
+ARM generator dependency `763b922f4912708d2704e7833f18addfbf8ddf33` on top of the
+existing project runtime. Game and BIOS code were regenerated. Launcher and CPU
+timing updates are not included.
+
+Runtime, MMIO, audio FIFO, frame-phase, and presentation-cadence capture, plus
+the hang watchdog, are now opt-in. Normal gameplay avoids their capture work.
+The overlay cache namespace changes from `abi4` to `abi5`; old caches are not
+deleted but cannot be loaded into the new callback layout. Battery-save paths,
+safe replacement, and the save-state layout are unchanged.
+
+Passed: six boot/save scenarios, 3,600 headless frames with menu input, two
+1,200-frame windowed replays (normal and diagnostic), and a headless diagnostic
+run. Enabled diagnostic runs produced nonempty MMIO CSV files; the windowed run
+also produced frame-phase and presentation-cadence CSV files. Four upstream tests
+passed: color LUT, diagnostic capture disabled/enabled, and code generation.
+Native save replacement/recovery and stale-generation rejection also passed.
+
+Use `scripts/test-release.ps1 -ExtendedInput -WindowedInput -DiagnosticCapture`
+to repeat this coverage. Packaging also runs the headless diagnostic scenario.
+For manual diagnosis, set the needed flags before starting the executable:
+
+- `GBARECOMP_RUNTIME_TRACE=1`
+- `GBARECOMP_MMIO_DUMP=<csv path>`
+- `GBARECOMP_AUDIO_FIFO_TRACE=1`
+- `GBARECOMP_FRAME_PHASE=<csv path>`
+- `GBARECOMP_PRESENT_CADENCE=1`
+- `GBARECOMP_HANG_WATCHDOG=1`
+
+Three alternating 1,200-frame headless boot runs took 1.214/1.213/1.227 seconds
+for the initial Release build and 1.182/1.185/1.199 seconds for this candidate.
+The roughly 2 percent median reduction is small and not a guaranteed gameplay
+gain. Guest summary fields and SRAM hashes matched in all three comparisons;
+this is not a full-state or full-game equivalence proof.
+
+Regression logs: `build/validation/ebe6eb435fdd48d9ad40a42378bfc949/`.
+Benchmark records: `build/validation/perf-benchmark-a34df0fab039463daab5214c90003ac2/`.
+Upstream test results: `build/runner-perf/gbarecomp-core/upstream-performance-tests.xml`.
+Manual gameplay, in-game save slots, save states, and rewind still need validation
+on this new candidate before publication.
+
+### Launcher BIOS And Input Follow-Up (2026-10-05)
+
+The maintainer validated combat, battery saves, save states, and rewind on the
+diagnostic-performance candidate. The follow-up candidate is in
+`build/runner-launcher` and adds a Play-triggered BIOS picker when the host rejects
+an empty or invalid BIOS path. Hosts that accept a BIOS fallback remain playable;
+retail BIOS backend mismatches retain the existing regeneration prompt.
+
+The GBA launcher seam persists `input_source` and `gamepad_guid` in the existing
+executable-local INI file. Closing the launcher exports and saves edited settings
+without booting. No transient SDL instance identifier or device handle is stored.
+The runtime tries the preferred SDL GUID first, then any available controller;
+keyboard input remains available. The preference survives disconnection. GBA
+source labels are refreshed from live devices, and connection indicators now
+reflect actual availability. SDL GUIDs identify device models, not individual
+units of an otherwise identical model.
+
+Target `sacredstones_launcher_policy_tests` checks controller-setting round trips,
+invalid-setting sanitization, unrelated INI section preservation, and BIOS Play
+gating. The release suite includes a windowed missing-controller fallback test.
+All eleven release scenarios passed; generated-source provenance tests also passed.
+An actual launcher run with an absent GUID confirmed settings survive Quit,
+including when no BIOS path is configured. The maintainer subsequently validated
+the native BIOS picker and input-device persistence successfully.
+
+Game regression logs: `build/validation/6b81d926a0e3462b8c642b237b7dabb4/`.
+Launcher screenshots and logs:
+`build/validation/launcher-ui-6bb0d9464da84775943a67195fa6096f/`.
 
 ## Symbol import
 
@@ -135,7 +239,7 @@ Expected runtime behavior:
 - `src/main.cpp` forces the executable-local `game.toml` through `--config` so
   launches from Explorer, terminals, and tests resolve the same save type and
   ROM identity settings.
-- The packaged preview uses a user-provided GBA BIOS by default. The launcher
+- The packaged game uses a user-provided GBA BIOS by default. The launcher
   exposes the BIOS picker and caches the selected path next to the executable.
 - `src/main.cpp` forces FE8's SRAM save type at process startup because this
   single-game runner must not depend on launcher/config propagation for save-chip

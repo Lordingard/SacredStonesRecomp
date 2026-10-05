@@ -1,5 +1,32 @@
 # Release Notes
 
+## v0.1.9 - 2026-10-05
+
+- Build the game and runtime in optimized Release mode by default. The maintainer
+  validated normal gameplay and smooth fast-forward.
+- Integrate the selected upstream opt-in diagnostic performance update, with
+  regenerated game and BIOS code. Normal play no longer records costly debug
+  captures by default; diagnostic flags remain available.
+- Open the BIOS picker from Play when the BIOS is missing or invalid. After
+  selecting a valid BIOS, press Play again.
+- Remember the selected input device, including when closing the launcher without
+  playing. Resolve the preferred controller by SDL GUID, with safe fallback if
+  absent; keyboard input remains available.
+- Show actual controller connection status in the launcher.
+- Retain safe SRAM replacement, explicit save paths, save states, and rewind.
+- Pin the runtime and launcher to project forks so clean clones can reproduce
+  these fixes independently of future upstream changes.
+- Validate isolated boot, SRAM reload, save overrides, locked-save recovery,
+  input, normal/diagnostic windowed replays, and an unavailable controller.
+  The maintainer validated combat, in-game saves, save states, rewind, BIOS
+  selection, and controller-selection persistence.
+- Keep the executable at the archive root. The Windows asset contains compiled
+  binaries, launcher assets, configuration, README, and release notes only;
+  no ROM, BIOS dump, user save, cache, or generated source is distributed.
+- Update the README's project status and retain the AI-assisted development
+  disclosure. Minor intro audio and incomplete full-game coverage remain known
+  limitations; broader upstream launcher and CPU timing updates are deferred.
+
 ## v0.1.8 - 2026-10-05
 
 - Preserve both the previous SRAM save and its temporary recovery file when

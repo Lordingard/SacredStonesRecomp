@@ -61,7 +61,7 @@ Copy-Item -LiteralPath (Join-Path $repoRoot "game.toml") -Destination (Join-Path
 Copy-Item -LiteralPath (Join-Path $repoRoot "README.md") -Destination (Join-Path $stageRoot "README.md") -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "docs/release.md") -Destination (Join-Path $stageRoot "RELEASE_NOTES.md") -Force
 
-& "$PSScriptRoot/test-release.ps1" -BuildDir $stageRoot -RomPath $RomPath -BiosPath $BiosPath -ExtendedInput
+& "$PSScriptRoot/test-release.ps1" -BuildDir $stageRoot -RomPath $RomPath -BiosPath $BiosPath -ExtendedInput -DiagnosticCapture
 
 if (Test-Path -LiteralPath $zipPath) {
     Remove-Item -LiteralPath $zipPath -Force
