@@ -8,8 +8,8 @@ def uiRoot = new File(repoRoot, "build/android-deps/recomp-ui")
 def sdkRoot = new File(System.getenv("ANDROID_HOME") ?: new File(repoRoot, "build/android-tools/sdk").path)
 ext.gbaGame = [
     applicationId: "com.lordingard.sacredstonesrecomp",
-    versionCode: 7,
-    versionName: "0.1.11",
+    versionCode: 11,
+    versionName: "0.1.12",
     title: "Fire Emblem: The Sacred Stones",
     romLabel: "The Sacred Stones (USA) ROM",
     romSha1: ["c25b145e37456171ada4b0d440bf88a19f4d509f"],
@@ -45,3 +45,4 @@ ext.gbaGame = [
     ]
 ]
 apply from: new File(engineRoot, "platform/android/gbarecomp-app.gradle")
+android.sourceSets.main.java.srcDir(file("src/main/java"))

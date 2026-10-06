@@ -46,10 +46,14 @@ Working now:
 - Quiet project builds: generated/framework warning noise is filtered from the
   normal build output.
 
-Android 0.1.11 adds a production-signed ARM64 APK. The maintainer reports working
+Android 0.1.12 provides a production-signed ARM64 APK. The maintainer reports working
 gameplay on Google Pixel 9 Pro, Xiaomi Pad 5, and Ayn Thor, and working save/load
 states through the in-game menu. The app includes touch controls, physical
 controller support, aspect-correct screen fitting, and automatic suspend/resume.
+Version 0.1.12 adds ZIP save export from setup and the in-game menu, modern Android
+Back support (validated on Ayn Thor), and larger display fitting without reserving
+the touch-gesture margins around the game image. The maintainer validated export
+on Pixel 9 Pro and accepted the display correction after three-device testing.
 Windows remains at 0.1.10; this release does not change the Windows runtime.
 
 Known limitations:
@@ -57,7 +61,8 @@ Known limitations:
 - Packaged targets are Windows x64 and Android ARM64 (Android 9 or newer).
 - Android has a single landscape surface; Ayn Thor's second screen is not used.
 - Android has not been tested on every device, or through the entire game.
-- Android save export is not yet available; uninstalling removes private saves.
+- Android save export is available; importing an archive is not implemented yet.
+- Save-state compatibility across platforms or runtime versions is not guaranteed.
 - Mods are not currently exposed.
 - The supported game ROM and launcher are in English; translation is not planned.
 - The game has not yet been exhaustively tested from start to finish.
@@ -115,7 +120,7 @@ the preference. Keyboard controls remain available.
 
 ## Quick Start - Android
 
-1. Download [SacredStonesRecomp-0.1.11-android-arm64.apk](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.11/SacredStonesRecomp-0.1.11-android-arm64.apk)
+1. Download [SacredStonesRecomp-0.1.12-android-arm64.apk](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.12/SacredStonesRecomp-0.1.12-android-arm64.apk)
    from the release's **Assets**, not the source-code archives.
 2. Open the APK on an ARM64 device running Android 9 or newer. Android may require
    permission to install from the browser or file manager you used.
@@ -128,10 +133,26 @@ Select is on the left near the D-pad; Start is on the right near A/B, both at th
 bottom. A connected controller hides virtual controls by default; a saved manual
 visibility preference takes precedence. Disconnecting the last controller restores
 the default touch controls when no manual preference is saved.
-Use Android's Back action to open the in-game settings and Assist Tools menu.
+Press Android's **Back** button once, or use the Back gesture, to open the
+in-game settings and Assist Tools menu. Ayn Thor's physical Back button is
+supported. Controller Select keeps its GBA Select function; Home remains a
+system action. R3/Guide are alternative menu inputs where the controller driver
+delivers them, not a requirement for Ayn Thor.
 Choose a state slot before Save state or Load state. Closing and reopening the
 app normally resumes the last suspended position; this is separate from the
 game's own save slots.
+
+To back up your saves, open **Assist Tools > Export saves**, choose a ZIP
+destination, and wait for **Saves exported**. The game stays paused during the
+export. **Export saves** is also available on the setup screen; launchers that
+support app shortcuts can expose **Saved games** even when setup is skipped.
+The archive contains the game's battery save, existing state slots 1-9, the
+automatic suspend snapshot and a backup manifest, never the ROM or BIOS.
+Export does not remove or modify your saves. Import is not available yet.
+
+The game maximizes its 3:2 image while protecting display cutouts. Black side
+bands on wider screens are normal; filling those bands would require stretching
+or cropping. Touch controls keep their own gesture-safe margins independently.
 
 **Updates:** close the game and install the new APK over the existing app. Do not
 uninstall or clear app data. This production APK includes a signing lineage from
@@ -205,6 +226,9 @@ On Android, the battery save is `files/saves/SacredStonesRecomp.sav` inside priv
 app storage. Save states and automatic suspend snapshots are beside the imported
 ROM in that storage, not beside the original file in Downloads. Installing an
 update preserves that storage; uninstalling or clearing app data deletes it.
+Use Android's **Export saves** before any operation that could remove app data,
+and keep the resulting ZIP separately. An export error can leave an incomplete
+destination file: only an export reported successful should be used as a backup.
 No ROM, BIOS dump, player save, or user configuration is bundled in the APK.
 
 When updating, close the game and extract the new binary archive into the

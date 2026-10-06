@@ -17,7 +17,22 @@
       {
         "patch": "gbarecomp-android-display.patch",
         "patchedPath": "src/runtime/host_window.cpp",
-        "patchedSha256": "7795D2CD41E35F9EB2B3000F2BBD581210E216CD6D93CD729BC6921790EAA2AB"
+        "patchedSha256": "F71D395C1EC84A4F41B9FD4F9B63104518C810E0B5D95017D42E88D7F60968A7"
+      },
+      {
+        "patch": "gbarecomp-save-export.patch",
+        "patchedPath": "platform/android/java/org/gbarecomp/GbaSetupActivity.java",
+        "patchedSha256": "1E74B4813CB9C43B19DEC83DBC8271127A911E46A6F043B9693D176D3EB44B0C"
+      },
+      {
+        "patch": "gbarecomp-mobile-menu.patch",
+        "patchedPath": "platform/android/java/org/gbarecomp/GbaGameActivity.java",
+        "patchedSha256": "CF4E5760C3FC08496D2971D3B53ADFD747FE96FEB0B598F3046D93D951048BA1"
+      },
+      {
+        "patch": "gbarecomp-save-export-activity.patch",
+        "patchedPath": "platform/android/AndroidManifest.xml",
+        "patchedSha256": "AB23F578372304B9D344B2EB1ED5F54EC4BCB0092508A874059B92EBC7537BF1"
       }
     ]
   },

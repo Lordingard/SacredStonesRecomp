@@ -1,0 +1,21 @@
+diff --git a/platform/android/AndroidManifest.xml b/platform/android/AndroidManifest.xml
+index e80bcf5..871c0f2 100644
+--- a/platform/android/AndroidManifest.xml
++++ b/platform/android/AndroidManifest.xml
+@@ -45,10 +45,16 @@
+                 <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
+         </activity>
++        <activity
++            android:name="org.gbarecomp.SaveExportActivity"
++            android:exported="false"
++            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
++            android:screenOrientation="${gbaActivityOrientation}" />
+         <!-- configChanges keeps rotation/resizing in-process: the runtime
+              re-lays out live instead of the Activity being recreated. -->
+         <activity
+             android:name="org.gbarecomp.GbaGameActivity"
++            android:enableOnBackInvokedCallback="true"
+             android:alwaysRetainTaskState="true"
+             android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation|density"
+             android:exported="false"

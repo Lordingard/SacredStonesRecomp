@@ -1,6 +1,11 @@
 #include "mobile_platform.h"
 #include "runtime.h"
 #include "launcher_seam.h"
+#include "host_window.h"
+#include "recomp_runtime_ui.h"
+#include <SDL.h>
+#include <jni.h>
+#include <cstring>
 
 #include <cstdio>
 #include <cstdlib>
@@ -9,6 +14,26 @@
 #include <vector>
 
 namespace {
+int mobile_menu_action(const char* key) {
+    if (std::strcmp(key, "sacredstones.export_saves") != 0) return 0;
+    auto* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+    jobject activity = static_cast<jobject>(SDL_AndroidGetActivity());
+    if (!env || !activity) return 0;
+    jclass type = env->GetObjectClass(activity);
+    jmethodID method = env->GetMethodID(type, "exportSavedGames", "()V");
+    if (method) env->CallVoidMethod(activity, method);
+    const bool failed = env->ExceptionCheck();
+    if (failed) { env->ExceptionDescribe(); env->ExceptionClear(); }
+    env->DeleteLocalRef(type);
+    env->DeleteLocalRef(activity);
+    return method && !failed ? 1 : 0;
+}
+
+const RecompRuntimeUiItem mobile_items[] = {
+    {"sacredstones.export_saves", "Assist Tools", "Export saves", "",
+     RECOMP_RUNTIME_UI_ACTION, 0, 0, 0, nullptr, 0, nullptr}
+};
+
 int run_sacred_stones(int argc, char** argv) {
     std::vector<std::string> args(argv, argv + argc);
     gbarecomp::MobileProcessOptions mobile;
@@ -38,6 +63,9 @@ int run_sacred_stones(int argc, char** argv) {
     opts.save_state_slot_count = 9;
     opts.rewind_history_seconds = 30;
     opts.resume_suspend_state_on_launch = true;
+    opts.ui_extra_items = mobile_items;
+    opts.ui_extra_item_count = 1;
+    opts.ui_action = mobile_menu_action;
 
     // The shared mobile bootstrap adds --no-launcher. The launcher seam owns
     // that flag and must consume it before the runtime's strict CLI parser.
@@ -51,6 +79,19 @@ int run_sacred_stones(int argc, char** argv) {
     std::fprintf(stderr, "[sacredstones:android] game exited code=%d\n", result);
     return result;
 }
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_org_gbarecomp_GameControls_requestBack(JNIEnv*, jclass) {
+    SDL_Event event{};
+    event.type = SDL_KEYDOWN;
+    event.key.state = SDL_PRESSED;
+    event.key.keysym.sym = SDLK_AC_BACK;
+    event.key.keysym.scancode = SDL_SCANCODE_AC_BACK;
+    SDL_PushEvent(&event);
+    event.type = SDL_KEYUP;
+    event.key.state = SDL_RELEASED;
+    SDL_PushEvent(&event);
 }
 
 extern "C" int SDL_main(int argc, char** argv) {

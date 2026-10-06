@@ -27,3 +27,41 @@ add_executable(android_pad_tests ../android_pad_test.cpp)
 target_include_directories(android_pad_tests PRIVATE
     "${GBARECOMP_ROOT}/src/runtime" "${CMAKE_CURRENT_BINARY_DIR}")
 target_compile_features(android_pad_tests PRIVATE cxx_std_20)
+
+# Compile the real event mapper against a small menu-state test double.
+file(READ "${pad_source}" menu_code)
+string(FIND "${menu_code}" "bool runtime_ui_event(" menu_start)
+if(menu_start LESS 0)
+    message(FATAL_ERROR "Unable to locate upstream runtime menu event mapper")
+endif()
+string(SUBSTRING "${menu_code}" ${menu_start} -1 menu_code)
+string(FIND "${menu_code}" "\n}  // namespace" menu_end)
+if(menu_end LESS 1)
+    message(FATAL_ERROR "Unable to locate end of upstream menu event mapper")
+endif()
+string(SUBSTRING "${menu_code}" 0 ${menu_end} menu_code)
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/menu_event.inc" "#if 1\n${menu_code}")
+add_executable(android_menu_tests ../android_menu_test.cpp)
+target_include_directories(android_menu_tests PRIVATE
+    "${GBARECOMP_ROOT}/../recomp-ui/src" "${CMAKE_CURRENT_BINARY_DIR}"
+    "${SDL2_INCLUDE_DIR}")
+target_compile_features(android_menu_tests PRIVATE cxx_std_20)
+
+# Exercise the real Android fit branch, including the distinction between
+# cutout insets and control/gesture insets, with a synthetic SDL drawable.
+file(READ "${pad_source}" fit_code)
+string(FIND "${fit_code}" "PresentationLayout current_presentation_layout(" fit_start)
+if(fit_start LESS 0)
+    message(FATAL_ERROR "Unable to locate Android presentation mapper")
+endif()
+string(SUBSTRING "${fit_code}" ${fit_start} -1 fit_code)
+string(FIND "${fit_code}" "void publish_touch_presentation(" fit_end)
+if(fit_end LESS 1)
+    message(FATAL_ERROR "Unable to locate end of Android presentation mapper")
+endif()
+string(SUBSTRING "${fit_code}" 0 ${fit_end} fit_code)
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/game_fit.inc" "${fit_code}")
+add_executable(android_game_fit_tests ../android_game_fit_test.cpp)
+target_include_directories(android_game_fit_tests PRIVATE
+    "${GBARECOMP_ROOT}/src/runtime" "${CMAKE_CURRENT_BINARY_DIR}" "${SDL2_INCLUDE_DIR}")
+target_compile_features(android_game_fit_tests PRIVATE cxx_std_20)

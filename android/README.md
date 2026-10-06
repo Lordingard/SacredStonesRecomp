@@ -103,6 +103,68 @@ the device. A successful build is not proof that this path works on hardware.
 
 ## Validation
 
+### Version 0.1.12 - Saves, Back And Display
+
+The signed 0.1.12 APK (version code 11) adds **Export saves** to the setup
+screen, the in-game **Assist Tools** menu, and a dynamic **Saved games** launcher
+shortcut. The shortcut opens setup without starting
+the game, even when skip-launcher is enabled. Dedicated-console launchers may
+not expose dynamic shortcuts; the in-game action remains available even when
+setup is skipped. The game Activity stays paused while choosing a destination
+and exporting; dismissing the result returns to the in-game menu.
+
+One press of Android Back opens the menu; while open, Back navigates back.
+Hardware `KEYCODE_BACK` is intercepted before SDL's controller processing.
+Android 13+ additionally registers `OnBackInvokedCallback` on the game Activity,
+with explicit manifest opt-in. It is registered on resume and removed on pause,
+so document pickers and the export Activity retain their own Back navigation.
+Android 9-12 keep the legacy handlers without loading API 33 types.
+The controller Back/Select button remains GBA Select, not a menu shortcut.
+Right-stick click (R3) also toggles the menu on Android; Guide is still supported
+where Android delivers it. Home remains a system action. The Ayn Thor's actual
+hardware Back access was confirmed working by the maintainer in test build 10.
+
+Build 11 separates display-cutout insets from touch/gesture insets. Native 3:2
+presentation fits the largest unobstructed display area, without reserving
+invisible gesture bands above/below the game. Touch controls retain the larger
+safe area. Aspect-related side bands remain; no stretching or cropping is added.
+Synthetic-drawable tests exercise the actual Android presentation branch for
+phone, tablet, handheld and portrait surfaces, including cutout protection and
+touch mapping. The maintainer accepted the visual correction after reporting
+the size issue on Pixel 9 Pro, Xiaomi Pad 5 and Ayn Thor.
+
+The player chooses a ZIP destination through Android's document picker. The
+archive contains `backup.json`, the 32 KiB battery save (if present), slots 1-9
+and the automatic suspend state. ROM, BIOS, preferences and unrelated files are
+excluded. Export is read-only: canonical paths and file sizes are checked, and
+changes during copying fail the export. The archive is staged privately before
+writing the selected destination. A destination-write failure may leave an
+incomplete document; only the app-created temporary file is automatically removed.
+Do not use a failed export as a backup.
+
+Host tests verify exact bytes, unchanged originals, exclusion of ROM/BIOS and
+other files, state-only export, empty/invalid/oversized data, and write failure.
+Host menu tests compile the actual patched event mapper and check R3 press/release,
+Back routing and preserved Select. Display, touch geometry, FE8 transitions and
+PPU smoke tests also pass. The ARM64 APK passes signing, certificate pinning and
+package checks; patches apply with matching hashes to a fresh pinned checkout.
+The maintainer confirmed working save export on the Pixel 9 Pro and modern Back
+on the Ayn Thor. The launcher shortcut still requires device acceptance.
+Host tests use a dispatcher test double to verify one action per modern Back,
+callback removal and the pre-Android-13 guard; they do not simulate Thor firmware.
+No import is included yet. Keep the original app installed and keep existing
+backups; this release does not promise cross-version or cross-platform save-state
+compatibility. Latest build log: `build/android-display-fit-test-build.log`.
+
+```powershell
+$jdk = 'build/android-tools/jdk/jdk-17.0.20.1+1/bin'
+New-Item -ItemType Directory -Force build/android-save-export-tests/classes
+& "$jdk/javac.exe" -d build/android-save-export-tests/classes `
+    android/app/src/main/java/org/gbarecomp/SaveArchive.java tests/AndroidSaveArchiveTest.java
+& "$jdk/java.exe" -cp build/android-save-export-tests/classes AndroidSaveArchiveTest `
+    build/android-save-export-tests/fixtures
+```
+
 Initial devices: Google Pixel 9 Pro, Xiaomi Pad 5, and Ayn Thor. Test the setup
 screen, normal boot, map and combat, touch and controller input, internal
 save/reload after restarting, save states, rewind, audio, and background/resume.
@@ -110,7 +172,7 @@ The prototype uses a single landscape surface; a second screen is out of scope.
 
 Internal saves use `files/saves/SacredStonesRecomp.sav` inside the app's private
 storage. Uninstalling the app removes that storage. Do not uninstall to update
-or test with valuable saves until backup/export has been validated. Save states
+or clear data with valuable saves; export a backup first. Save states
 remain beside the imported ROM in private storage. Desktop persistent controls
 are not yet promised to have equivalent Android behavior.
 
@@ -128,20 +190,21 @@ manual verification of gameplay and saves after the update.
 The maintainer subsequently confirmed normal startup at the previous suspended
 position and successful loading of the pre-update save state on the Pixel.
 Release packaging evidence is in `build/android-release-0.1.11-final.log`.
-The final APK also carries the engine, UI, SDL2, ImGui, ARM core and Android NDK
-license notices. Native libraries remain identical to the validated test 6.
+The APK also carries the engine, UI, SDL2, ImGui, ARM core and Android NDK
+license notices. Version 0.1.12 publishes the exact APK validated as test build 11;
+its SHA-256 is `74d0a4d013c5d5acc7a83dd12e04eeae285f7d008606d874e5166657a719a150`.
 
 Windows and Android keep separate dependency pins and validation. Windows's
 complete persistent-control and save-safety feature set is not assumed to apply
 to Android merely because they share an upstream engine. Android save export
-remains a future task; users must not uninstall to update.
+is included in 0.1.12; users must not uninstall to update.
 
 ## Production Signing
 
 First generate game/BIOS sources with `scripts/build-android.ps1`, then use:
 
 ```powershell
-pwsh scripts/package-android-release.ps1 -Version 0.1.11 -VersionCode 7
+pwsh scripts/package-android-release.ps1 -Version 0.1.12 -VersionCode 11
 ```
 
 Release packaging intentionally reuses the generated Android corpus, builds
@@ -166,6 +229,9 @@ The helper asks for a new backup password locally, exports an encrypted portable
 keystore and the signing lineage, and never prints passwords. Keep the password
 in a password manager separately from the backup. Private keys and credentials
 must never enter Git, logs, GitHub secrets output, or release assets.
+Use `-SigningDirectory` if the existing protected signing material is stored
+outside the default directory. Do not regenerate a key to work around an access
+problem; keep signing material outside Git and keep a portable encrypted backup.
 The public production certificate SHA-256 is recorded in `release-signing.json`.
 APK signatures do not guarantee elimination of unknown-source/Play Protect
 prompts; see https://developer.android.com/tools/apksigner.
@@ -180,5 +246,5 @@ Targeted render checks can be built independently of the Windows runner:
 cmake -S tests/android-render -B build/android-render-tests -G Ninja `
     -DGBARECOMP_ROOT="$PWD/build/android-deps/gbarecomp" `
     -DCMAKE_BUILD_TYPE=Release
-cmake --build build/android-render-tests --target android_pad_tests android_display_tests fe8_transition_tests ppu_smoke_tests --parallel 2
+cmake --build build/android-render-tests --target android_game_fit_tests android_menu_tests android_pad_tests android_display_tests fe8_transition_tests ppu_smoke_tests --parallel 2
 ```

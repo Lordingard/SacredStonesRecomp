@@ -1,6 +1,6 @@
 param(
-    [string] $Version = '0.1.11',
-    [ValidateRange(7, 2147483647)][int] $VersionCode = 7,
+    [string] $Version = '0.1.12',
+    [ValidateRange(7, 2147483647)][int] $VersionCode = 11,
     [string] $SigningDirectory = (Join-Path $env:LOCALAPPDATA 'SacredStonesRecomp/signing'),
     [switch] $InitializeSigning
 )

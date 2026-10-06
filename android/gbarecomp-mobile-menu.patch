@@ -1,0 +1,83 @@
+diff --git a/platform/android/java/org/gbarecomp/GbaGameActivity.java b/platform/android/java/org/gbarecomp/GbaGameActivity.java
+index e4775ee..99ad8b2 100644
+--- a/platform/android/java/org/gbarecomp/GbaGameActivity.java
++++ b/platform/android/java/org/gbarecomp/GbaGameActivity.java
+@@ -1,12 +1,14 @@
+ package org.gbarecomp;
+ 
+ import android.content.pm.ActivityInfo;
++import android.content.Intent;
+ import android.content.res.AssetManager;
+ import android.graphics.Insets;
+ import android.os.Build;
+ import android.os.Bundle;
+ import android.util.DisplayMetrics;
+ import android.view.DisplayCutout;
++import android.view.KeyEvent;
+ import android.view.View;
+ import android.view.WindowInsets;
+ import android.view.WindowInsetsController;
+@@ -31,6 +33,7 @@ import java.nio.charset.StandardCharsets;
+ public class GbaGameActivity extends SDLActivity {
+     private GbaGameConfig config;
+     private boolean nativeReady;
++    private Runnable unregisterBack = () -> {};
+ 
+     @Override
+     protected void onCreate(Bundle savedInstanceState) {
+@@ -57,6 +60,39 @@ public class GbaGameActivity extends SDLActivity {
+         enterImmersiveMode();
+     }
+ 
++    @Override
++    protected void onResume() {
++        super.onResume();
++        unregisterBack.run();
++        unregisterBack = BackNavigation.register(this, GameControls::requestBack);
++    }
++
++    @Override
++    protected void onPause() {
++        unregisterBack.run();
++        unregisterBack = () -> {};
++        super.onPause();
++    }
++
++    @Override
++    public boolean dispatchKeyEvent(KeyEvent event) {
++        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
++            if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0)
++                GameControls.requestBack();
++            return true;
++        }
++        return super.dispatchKeyEvent(event);
++    }
++
++    @Override
++    public void onBackPressed() {
++        GameControls.requestBack();
++    }
++
++    public void exportSavedGames() {
++        runOnUiThread(() -> startActivity(new Intent(this, SaveExportActivity.class)));
++    }
++
+     @Override
+     public void onWindowFocusChanged(boolean hasFocus) {
+         super.onWindowFocusChanged(hasFocus);
+@@ -85,6 +121,7 @@ public class GbaGameActivity extends SDLActivity {
+                 bottom = cutout.getSafeInsetBottom();
+             }
+         }
++        int cutoutLeft = left, cutoutTop = top, cutoutRight = right, cutoutBottom = bottom;
+         if (Build.VERSION.SDK_INT >= 29) {
+             // Edge swipes starting here belong to the system (home/back).
+             Insets gestures = insets.getMandatorySystemGestureInsets();
+@@ -94,6 +131,7 @@ public class GbaGameActivity extends SDLActivity {
+             bottom = Math.max(bottom, gestures.bottom);
+         }
+         try {
++            GameControls.setDisplayCutoutInsets(cutoutLeft, cutoutTop, cutoutRight, cutoutBottom);
+             GbaNative.setSafeInsets(left, top, right, bottom);
+             DisplayMetrics metrics = new DisplayMetrics();
+             getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
