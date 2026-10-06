@@ -56,16 +56,20 @@ if (-not (Test-Path -LiteralPath $assets -PathType Container)) {
     throw "Launcher assets directory not found: $assets"
 }
 Copy-Item -LiteralPath $assets -Destination (Join-Path $stageRoot "assets") -Recurse -Force
+New-Item -ItemType Directory -Path (Join-Path $stageRoot 'tools') | Out-Null
+Copy-Item -LiteralPath (Join-Path $repoRoot 'scripts/export-windows-saves.ps1') -Destination (Join-Path $stageRoot 'tools/export-windows-saves.ps1')
 
 Copy-Item -LiteralPath (Join-Path $repoRoot "game.toml") -Destination (Join-Path $stageRoot "game.toml") -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "README.md") -Destination (Join-Path $stageRoot "README.md") -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "docs/release.md") -Destination (Join-Path $stageRoot "RELEASE_NOTES.md") -Force
 
-& "$PSScriptRoot/test-release.ps1" -BuildDir $stageRoot -RomPath $RomPath -BiosPath $BiosPath -ExtendedInput -DiagnosticCapture
+& "$PSScriptRoot/test-release.ps1" -BuildDir $stageRoot -RomPath $RomPath -BiosPath $BiosPath -ExtendedInput -WindowedInput -DiagnosticCapture
 
 if (Test-Path -LiteralPath $zipPath) {
     Remove-Item -LiteralPath $zipPath -Force
 }
 Compress-Archive -Path (Join-Path $stageRoot "*") -DestinationPath $zipPath -Force
+$hash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+[IO.File]::WriteAllText("$zipPath.sha256", "$hash  $stageName.zip`n", [Text.Encoding]::ASCII)
 
 Write-Host "Release package: $zipPath"

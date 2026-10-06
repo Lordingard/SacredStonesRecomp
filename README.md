@@ -41,12 +41,14 @@ Working now:
 - In-game settings menu with state slots 1-9, save/load, and fast-forward controls.
 - Fast-forward speed from 2x to 10x and independently switchable rewind.
 - Remembered speed, rewind/Assist Tools enable switches, and selected state slot.
+- Remembered Windows fullscreen mode, shared by the launcher and in-game menu.
+- ZIP save export from the in-game menu on both platforms.
 - Xbox-compatible controller support through SDL.
 - User-provided GBA BIOS support for correct boot, timing, and interrupt behavior.
 - Quiet project builds: generated/framework warning noise is filtered from the
   normal build output.
 
-Android 0.1.12 provides a production-signed ARM64 APK. The maintainer reports working
+Android provides a production-signed ARM64 APK. The maintainer reports working
 gameplay on Google Pixel 9 Pro, Xiaomi Pad 5, and Ayn Thor, and working save/load
 states through the in-game menu. The app includes touch controls, physical
 controller support, aspect-correct screen fitting, and automatic suspend/resume.
@@ -54,14 +56,16 @@ Version 0.1.12 adds ZIP save export from setup and the in-game menu, modern Andr
 Back support (validated on Ayn Thor), and larger display fitting without reserving
 the touch-gesture margins around the game image. The maintainer validated export
 on Pixel 9 Pro and accepted the display correction after three-device testing.
-Windows remains at 0.1.10; this release does not change the Windows runtime.
+Version 0.1.13 aligns the Windows and Android release numbers. Windows adds
+persistent fullscreen and ZIP save export; Android retains the validated 0.1.12
+game runtime and features. The two platforms keep independent dependency pins.
 
 Known limitations:
 
 - Packaged targets are Windows x64 and Android ARM64 (Android 9 or newer).
 - Android has a single landscape surface; Ayn Thor's second screen is not used.
 - Android has not been tested on every device, or through the entire game.
-- Android save export is available; importing an archive is not implemented yet.
+- Save export is available on both platforms; importing an archive is not implemented yet.
 - Save-state compatibility across platforms or runtime versions is not guaranteed.
 - Mods are not currently exposed.
 - The supported game ROM and launcher are in English; translation is not planned.
@@ -101,7 +105,7 @@ The runtime validates the ROM SHA-1 and refuses unrecognized ROMs.
 
 ## Quick Start - Windows
 
-1. Download [SacredStonesRecomp-0.1.10-win64.zip](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.10/SacredStonesRecomp-0.1.10-win64.zip)
+1. Download [SacredStonesRecomp-0.1.13-win64.zip](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.13/SacredStonesRecomp-0.1.13-win64.zip)
    from the release's **Assets** section and extract it. The **Source code**
    archives are for developers, not the playable package.
 2. Run `SacredStonesRecomp.exe`.
@@ -120,7 +124,7 @@ the preference. Keyboard controls remain available.
 
 ## Quick Start - Android
 
-1. Download [SacredStonesRecomp-0.1.12-android-arm64.apk](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.12/SacredStonesRecomp-0.1.12-android-arm64.apk)
+1. Download [SacredStonesRecomp-0.1.13-android-arm64.apk](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.13/SacredStonesRecomp-0.1.13-android-arm64.apk)
    from the release's **Assets**, not the source-code archives.
 2. Open the APK on an ARM64 device running Android 9 or newer. Android may require
    permission to install from the browser or file manager you used.
@@ -198,11 +202,23 @@ go back. Resume returns to gameplay.
   off discards that history; after re-enabling, wait for new history to build.
 - **Assist Tools** enables/disables save-state, fast-forward, and rewind controls
   together. It does not disable the game's own battery save.
+- **Export saves** opens a ZIP destination picker. The game stays paused and
+  flushes its current battery save before exporting. The archive contains the
+  battery save, existing state slots 1-9, any suspend snapshot, and a manifest;
+  it never contains your ROM or BIOS. Keep the supplied `tools/` folder beside
+  the executable. Export uses Windows' built-in PowerShell; no install is needed.
 - Display/audio settings include fullscreen, window scale, filtering, volume,
-  audio enable, and the FPS readout. These adjustments are session settings;
-  only the runtime preferences listed below are persisted by this menu.
+  audio enable, and the FPS readout. Fullscreen is remembered; the other
+  display/audio adjustments made in this menu are session settings.
 
-State slot, fast-forward speed, and the rewind/Assist Tools enable switches
+Use **Alt+Enter** or **Display > Fullscreen** to switch between windowed and
+fullscreen play. Borderless fullscreen is recommended; exclusive fullscreen
+remains available. The launcher, menu and shortcut share the remembered mode.
+The game preserves its original 3:2 image without stretching or cropping, so
+side bands on wider monitors are normal. An explicit `--fullscreen=0`, `1`, or
+`2` overrides the remembered startup mode for that launch.
+
+Fullscreen, state slot, fast-forward speed, and the rewind/Assist Tools enable switches
 are saved immediately. Savestates are snapshots, separate from the game's save
 slots; rewind history is temporary and is not restored after closing the game.
 
@@ -226,7 +242,7 @@ On Android, the battery save is `files/saves/SacredStonesRecomp.sav` inside priv
 app storage. Save states and automatic suspend snapshots are beside the imported
 ROM in that storage, not beside the original file in Downloads. Installing an
 update preserves that storage; uninstalling or clearing app data deletes it.
-Use Android's **Export saves** before any operation that could remove app data,
+Use **Export saves** before any operation that could remove app data,
 and keep the resulting ZIP separately. An export error can leave an incomplete
 destination file: only an export reported successful should be used as a backup.
 No ROM, BIOS dump, player save, or user configuration is bundled in the APK.

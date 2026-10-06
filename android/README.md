@@ -201,10 +201,17 @@ is included in 0.1.12; users must not uninstall to update.
 
 ## Production Signing
 
+Version 0.1.13 (version code 12) aligns the release number with Windows.
+All three ARM64 native libraries are byte-identical to the validated 0.1.12 APK;
+Android dependency pins and gameplay code are unchanged. It retains the same
+production certificate and signing lineage. This package has automated build
+and signature checks; the previous three-device gameplay validation applies to
+the unchanged runtime, not a new manual installation test.
+
 First generate game/BIOS sources with `scripts/build-android.ps1`, then use:
 
 ```powershell
-pwsh scripts/package-android-release.ps1 -Version 0.1.12 -VersionCode 11
+pwsh scripts/package-android-release.ps1 -Version 0.1.13 -VersionCode 12
 ```
 
 Release packaging intentionally reuses the generated Android corpus, builds

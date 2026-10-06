@@ -65,7 +65,9 @@ set_target_properties(sacredstones_generated PROPERTIES
 
 add_executable(SacredStonesRecomp
     src/main.cpp
+    src/windows_save_export.cpp
 )
+target_link_libraries(SacredStonesRecomp PRIVATE comdlg32)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -98,6 +100,10 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_custom_command(TARGET SacredStonesRecomp POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "$<TARGET_FILE_DIR:SacredStonesRecomp>/tools"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/scripts/export-windows-saves.ps1"
+        "$<TARGET_FILE_DIR:SacredStonesRecomp>/tools/export-windows-saves.ps1"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different
         "${CMAKE_CURRENT_SOURCE_DIR}/game.toml"
         "$<TARGET_FILE_DIR:SacredStonesRecomp>/game.toml"

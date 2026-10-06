@@ -292,8 +292,14 @@ Expected runtime behavior:
 - `Assist Tools` is hidden in the launcher. Escape or the controller Guide
   button opens the in-game menu with save-state, fast-forward, and rewind controls.
 - The executable-local `runtime-controls.toml` persists the selected slot,
-  fast-forward multiplier, and Assist Tools/rewind enable switches. Display/audio
-  menu changes, active fast-forward, and rewind history are session-only.
+  fast-forward multiplier, Assist Tools/rewind enable switches, and fullscreen.
+  Fullscreen is shared by the launcher, menu and Alt+Enter; an explicit CLI mode
+  overrides startup without rewriting the preference. Other display/audio menu
+  changes, active fast-forward, and rewind history are session-only.
+- Windows save export flushes SRAM before the game-owned menu callback, pauses
+  gameplay and invokes the packaged `tools/export-windows-saves.ps1` helper with
+  Windows PowerShell. Archives contain only saves and a manifest. Export tests
+  exercise original-file preservation and failure-safe ZIP replacement.
 - Save states remain beside the selected ROM as `.state1` through `.state9`;
   they do not share the standardized battery-save path.
 - `launcher-window.ini` remembers launcher dimensions; a new installation starts

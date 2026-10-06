@@ -1,4 +1,6 @@
 #include "runtime.h"
+#include "windows_save_export.h"
+#include "recomp_runtime_ui.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -162,6 +164,12 @@ int main(int argc, char** argv) {
     opts.builtin_rom_sha1 = "c25b145e37456171ada4b0d440bf88a19f4d509f";
     opts.mod_game_id = "sacred-stones-us";
     opts.freely_resizable_window = true;
+    opts.remember_fullscreen = true;
+    const RecompRuntimeUiItem export_item{"sacredstones.export_saves", "Assist Tools",
+        "Export saves", "", RECOMP_RUNTIME_UI_ACTION, 0, 0, 0, nullptr, 0, nullptr};
+    opts.ui_extra_items = &export_item;
+    opts.ui_extra_item_count = 1;
+    opts.ui_action = windows_menu_action;
     opts.show_fps_by_default = true;
     opts.expose_assist_tools = true;
     opts.assist_tools_enabled_by_default = true;
@@ -200,6 +208,7 @@ int main(int argc, char** argv) {
     force_save_path(args, save_path);
     ensure_save_directory(save_path);
     if (!explicit_save) migrate_legacy_save_if_needed(args, save_path);
+    configure_save_export(executable_path(args), save_path, arg_value(args, "--rom"));
 
 
     std::vector<char*> av;

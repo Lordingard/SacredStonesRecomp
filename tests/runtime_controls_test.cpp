@@ -22,14 +22,26 @@ int main(int argc, char** argv) {
         selected.fast_forward_multiplier = 7;
         selected.rewind_enabled = false;
         selected.state_slot = 8;
+        selected.fullscreen = 1;
+        require(gbarecomp::save_runtime_controls(path, selected, error, true), "fullscreen-only write failed");
+        require(read(path).find("assist_tools_enabled") == std::string::npos,
+                "fullscreen-only write reset assist defaults");
         std::ofstream(path) << "unrelated = 'preserve me'\n";
         require(gbarecomp::save_runtime_controls(path, selected, error), "preferences write failed");
         gbarecomp::RuntimeControlPreferences restored;
         require(gbarecomp::load_runtime_controls(path, restored, 9, error), "preferences reload failed");
         require(restored.fast_forward_multiplier == 7 && !restored.rewind_enabled &&
-                restored.state_slot == 8 && restored.assist_tools_enabled,
+                restored.state_slot == 8 && restored.assist_tools_enabled && restored.fullscreen == 1,
                 "preferences did not round-trip");
         require(read(path).find("preserve me") != std::string::npos, "unknown preference lost");
+        gbarecomp::RuntimeControlPreferences launcher;
+        launcher.fullscreen = 0;
+        require(gbarecomp::save_runtime_controls(path, launcher, error, true), "launcher fullscreen write failed");
+        restored = {};
+        require(gbarecomp::load_runtime_controls(path, restored, 9, error) &&
+                restored.fullscreen == 0 && restored.fast_forward_multiplier == 7 &&
+                !restored.rewind_enabled && restored.state_slot == 8,
+                "launcher fullscreen write reset runtime controls");
         restored = {};
         require(gbarecomp::load_runtime_controls(path, restored, 3, error) && restored.state_slot == 1,
                 "unsupported state slot accepted");
@@ -42,11 +54,18 @@ int main(int argc, char** argv) {
         require(!gbarecomp::load_runtime_controls(path / "absent.toml", restored, 9, error) &&
                 restored.fast_forward_multiplier == 4 && restored.rewind_enabled,
                 "missing preferences changed defaults");
-        std::ofstream(path) << "fast_forward_multiplier = 999\nstate_slot = -1\nrewind_enabled = 'wrong type'\n";
+        std::ofstream(path) << "fast_forward_multiplier = 999\nstate_slot = -1\nrewind_enabled = 'wrong type'\nfullscreen = 99\n";
         restored = {};
         require(gbarecomp::load_runtime_controls(path, restored, 9, error), "valid TOML rejected");
         require(restored.fast_forward_multiplier == 4 && restored.state_slot == 1 &&
-                restored.rewind_enabled, "invalid values changed defaults");
+                restored.rewind_enabled && restored.fullscreen == -1, "invalid values changed defaults");
+        for (int mode : {0, 1, 2}) {
+            selected.fullscreen = mode;
+            require(gbarecomp::save_runtime_controls(path, selected, error), "fullscreen write failed");
+            restored = {};
+            require(gbarecomp::load_runtime_controls(path, restored, 9, error) && restored.fullscreen == mode,
+                    "fullscreen mode did not round-trip");
+        }
         std::ofstream(path) << "broken = [";
         const auto malformed = read(path);
         require(!gbarecomp::load_runtime_controls(path, restored, 9, error), "malformed TOML accepted");

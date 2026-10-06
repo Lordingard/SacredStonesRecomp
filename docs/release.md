@@ -1,5 +1,19 @@
 # Release Notes
 
+## v0.1.13 - 2026-10-06
+
+- Align Windows and Android release numbers without merging their engine pins.
+- Remember Windows fullscreen changes from the launcher, menu and Alt+Enter.
+  Prefer borderless; retain windowed and exclusive modes and explicit CLI overrides.
+- Add Windows Assist Tools > Export saves with a native ZIP destination picker.
+  Flush battery memory first, pause gameplay, and export only saves and a manifest.
+- Include the Windows PowerShell helper under tools; no additional install is needed.
+- Preserve original saves and an existing destination ZIP if export fails.
+- Extend tests for fullscreen preference loading/CLI overrides, ZIP contents,
+  empty/invalid storage, locked destinations and unchanged original files.
+- Keep the Android 0.1.12 runtime unchanged and retain the production signing key.
+- Document fullscreen, export, package contents and update precautions.
+
 ## v0.1.10 - 2026-10-05
 
 - Rebuild from an isolated clean clone with pinned dependencies fetched from

@@ -35,9 +35,9 @@ if ($DiagnosticCapture) {
     $scenarios += 'diagnostics'
     if ($WindowedInput) { $scenarios += 'window-diagnostics' }
 }
-if ($WindowedInput) { $scenarios += @('window-controls', 'window-controls-invalid') }
+if ($WindowedInput) { $scenarios += @('window-controls', 'window-controls-invalid', 'window-fullscreen', 'window-fullscreen-override') }
 foreach ($scenario in $scenarios) {
-    $windowed = $scenario -in @('window-input', 'window-diagnostics', 'window-missing-controller', 'window-controls', 'window-controls-invalid')
+    $windowed = $scenario -in @('window-input', 'window-diagnostics', 'window-missing-controller', 'window-controls', 'window-controls-invalid', 'window-fullscreen', 'window-fullscreen-override')
     $diagnostics = $scenario -in @('diagnostics', 'window-diagnostics')
     $frames = if ($scenario -eq 'input') { 3600 } else { 1200 }
     $defaultSave = Join-Path $testRoot 'saves/SacredStonesRecomp.sav'
@@ -53,9 +53,11 @@ foreach ($scenario in $scenarios) {
     $info = [Diagnostics.ProcessStartInfo]::new()
     $info.FileName = Join-Path $testRoot 'SacredStonesRecomp.exe'
     $info.WorkingDirectory = $testRoot
-    if ($scenario -in @('window-controls', 'window-controls-invalid')) {
+    if ($scenario -in @('window-controls', 'window-controls-invalid', 'window-fullscreen', 'window-fullscreen-override')) {
         $controlsPath = Join-Path $testRoot 'runtime-controls.toml'
-        $content = if ($scenario -eq 'window-controls') {
+        $content = if ($scenario -in @('window-fullscreen', 'window-fullscreen-override')) {
+            "fullscreen = 1`n"
+        } elseif ($scenario -eq 'window-controls') {
             "fast_forward_multiplier = 7`nrewind_enabled = false`nstate_slot = 8`nassist_tools_enabled = true`n"
         } else { 'invalid = [' }
         [IO.File]::WriteAllText($controlsPath, $content)
@@ -105,6 +107,7 @@ foreach ($scenario in $scenarios) {
     }
     $runArgs = @('--bios', $resolvedBios, '--frames', "$frames")
     if ($windowed) { $runArgs += '--window' }
+    if ($scenario -eq 'window-fullscreen-override') { $runArgs += '--fullscreen=0' }
     $runArgs += @('--rom', $resolvedRom)
     if ($scenario -in @('save-path', 'save-alias', 'save-relative', 'locked-save')) {
         $save = Join-Path $testRoot "alternate/$scenario.sav"
@@ -166,7 +169,13 @@ foreach ($scenario in $scenarios) {
             $log -notmatch 'invalid runtime-controls TOML; using defaults') {
             throw "Invalid controls did not fall back safely. Log: $logPath"
         }
-        if ($scenario -in @('window-controls', 'window-controls-invalid') -and
+        if ($scenario -eq 'window-fullscreen' -and $log -notmatch 'runtime_fullscreen_loaded mode=1') {
+            throw "Remembered borderless fullscreen did not reload. Log: $logPath"
+        }
+        if ($scenario -eq 'window-fullscreen-override' -and $log -notmatch 'runtime_fullscreen_loaded mode=0') {
+            throw "Explicit windowed override did not take precedence. Log: $logPath"
+        }
+        if ($scenario -in @('window-controls', 'window-controls-invalid', 'window-fullscreen', 'window-fullscreen-override') -and
             (Get-FileHash -LiteralPath $controlsPath).Hash -ne $controlsHash) {
             throw "Loading controls unexpectedly modified the file. Log: $logPath"
         }
