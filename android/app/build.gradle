@@ -1,0 +1,47 @@
+plugins {
+    id "com.android.application"
+}
+
+def repoRoot = rootDir.parentFile
+def engineRoot = new File(repoRoot, "build/android-deps/gbarecomp")
+def uiRoot = new File(repoRoot, "build/android-deps/recomp-ui")
+def sdkRoot = new File(System.getenv("ANDROID_HOME") ?: new File(repoRoot, "build/android-tools/sdk").path)
+ext.gbaGame = [
+    applicationId: "com.lordingard.sacredstonesrecomp",
+    versionCode: 7,
+    versionName: "0.1.11",
+    title: "Fire Emblem: The Sacred Stones",
+    romLabel: "The Sacred Stones (USA) ROM",
+    romSha1: ["c25b145e37456171ada4b0d440bf88a19f4d509f"],
+    romSize: 16777216,
+    romFile: "sacred_stones_usa.gba",
+    biosRequired: true,
+    orientation: "landscape",
+    gyro: false,
+    payloadVersion: "1",
+    variant: "sacred_stones",
+    gameToml: new File(rootDir, "game_android.toml"),
+    gameRoot: new File(rootDir, "native"),
+    engineRoot: engineRoot,
+    recompUiRoot: uiRoot,
+    debugAbis: ["arm64-v8a"],
+    releaseAbis: ["arm64-v8a"],
+    payloadDirs: [
+        [from: new File(engineRoot, "LICENSE"), into: "licenses/gbarecomp"],
+        [from: new File(engineRoot, "external/arm-recomp-core/LICENSE"), into: "licenses/arm-recomp-core"],
+        [from: new File(uiRoot, "LICENSE"), into: "licenses/recomp-ui"],
+        [from: new File(engineRoot, "platform/android/third_party/SDL/LICENSE.txt"), into: "licenses/SDL2"],
+        [from: new File(uiRoot, "src/third_party/imgui/LICENSE.txt"), into: "licenses/imgui"],
+        [from: new File(sdkRoot, "ndk/27.1.12297006/NOTICE"), into: "licenses/android-ndk"],
+        [from: new File(sdkRoot, "ndk/27.1.12297006/NOTICE.toolchain"), into: "licenses/android-ndk"],
+        [from: new File(uiRoot, "assets/common/fonts"), into: "assets/fonts"],
+        [from: new File(uiRoot, "assets/common/img"), into: "assets/img"],
+        [from: new File(uiRoot, "assets/consoles/gba/img"), into: "assets/img"]
+    ],
+    cmakeArguments: [
+        "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON",
+        "-DSACREDSTONES_GENERATED_PROJECT=${new File(repoRoot, '.generated/android').absolutePath.replace('\\', '/')}",
+        "-DGBARECOMP_GENERATED_BIOS_DIR=${new File(repoRoot, 'build/android-generated-bios').absolutePath.replace('\\', '/')}"
+    ]
+]
+apply from: new File(engineRoot, "platform/android/gbarecomp-app.gradle")

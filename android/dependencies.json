@@ -1,0 +1,29 @@
+{
+  "reference": "https://github.com/mstan/WarioWareTwistedRecomp/tree/405b030197136fa048be370874fb1c91498f8cc5",
+  "gbarecomp": {
+    "url": "https://github.com/mstan/gbarecomp.git",
+    "commit": "2d8c2c0ed09515ef687f130f92892bac2566d512",
+    "patches": [
+      {
+        "patch": "gbarecomp-version-code.patch",
+        "patchedPath": "platform/android/gbarecomp-app.gradle",
+        "patchedSha256": "CBD89EB1DE8A7352EDA1215691ACBBF10976F226D9AAA179F470AF54E2F46446"
+      },
+      {
+        "patch": "gbarecomp-fe8-transitions.patch",
+        "patchedPath": "src/gba/gba_ppu.cpp",
+        "patchedSha256": "CC77255C822BD8E9402B9883B5A640C1A4A4E51ABDE1ABAE663B733DC7D513F9"
+      },
+      {
+        "patch": "gbarecomp-android-display.patch",
+        "patchedPath": "src/runtime/host_window.cpp",
+        "patchedSha256": "7795D2CD41E35F9EB2B3000F2BBD581210E216CD6D93CD729BC6921790EAA2AB"
+      }
+    ]
+  },
+  "recomp-ui": {
+    "url": "https://github.com/mstan/recomp-ui.git",
+    "commit": "e45e1f3062731abc188e351cad3608730b01fa12"
+  },
+  "gradle": "8.11.1"
+}

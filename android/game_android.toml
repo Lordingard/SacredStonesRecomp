@@ -1,0 +1,27 @@
+[game]
+name = "Fire Emblem: The Sacred Stones"
+short_name = "sacred_stones"
+default_region = "usa"
+
+[rom]
+path = "../../roms/sacred_stones_usa.gba"
+sha1 = "c25b145e37456171ada4b0d440bf88a19f4d509f"
+
+[bios]
+path = "../../bios/gba_bios.bin"
+sha1 = "300c20df6731a33952ded8c436f7f186d25d3492"
+hle = false
+
+[save]
+path = "../../saves/SacredStonesRecomp.sav"
+type = "sram"
+size = 32768
+
+[runtime]
+debug_port = 19842
+window_title = "SacredStonesRecomp"
+
+[video]
+screen = "raw"
+view_width = 240
+resize_view = false

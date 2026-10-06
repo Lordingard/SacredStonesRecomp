@@ -1,0 +1,103 @@
+diff --git a/src/runtime/host_window.cpp b/src/runtime/host_window.cpp
+index 742e98e..e815b8d 100644
+--- a/src/runtime/host_window.cpp
++++ b/src/runtime/host_window.cpp
+@@ -671,9 +671,12 @@ PadLayout compute_pad_layout(const Backend* b) {
+         p.b.y = cy + button_r * 0.9f;
+         p.l = {left + margin, top + margin, shoulder_w, shoulder_h};
+         p.r = {right - margin - shoulder_w, top + margin, shoulder_w, shoulder_h};
+-        const float mid = (left + right) * 0.5f;
+-        p.select = {mid - pill_w - 3.0f * mm, bottom - margin - pill_h, pill_w, pill_h};
+-        p.start = {mid + 3.0f * mm, bottom - margin - pill_h, pill_w, pill_h};
++        // Keep utility buttons within thumb reach, outside the enlarged hit
++        // regions used by the D-pad and action buttons.
++        p.select = {p.dpad.x + arm * 1.35f + 3.0f * mm,
++                    bottom - margin - pill_h, pill_w, pill_h};
++        p.start = {std::min(p.a.x, p.b.x) - button_r * 1.3f - 3.0f * mm - pill_w,
++                   bottom - margin - pill_h, pill_w, pill_h};
+     } else {
+         // Portrait: a control band at the bottom (the space under the game
+         // image when it is tall enough, else overlaid on the image).
+@@ -692,9 +695,8 @@ PadLayout compute_pad_layout(const Backend* b) {
+         p.a.y = cy - button_r * 0.9f;
+         p.b.x = p.a.x - button_r * kClusterDx;
+         p.b.y = cy + button_r * 0.9f;
+-        const float mid = (left + right) * 0.5f;
+-        p.select = {mid - pill_w - 3.0f * mm, pills_y, pill_w, pill_h};
+-        p.start = {mid + 3.0f * mm, pills_y, pill_w, pill_h};
++        p.select = {p.dpad.x - pill_w * 0.5f, pills_y, pill_w, pill_h};
++        p.start = {(p.a.x + p.b.x - pill_w) * 0.5f, pills_y, pill_w, pill_h};
+     }    const float tw = 8.0f * mm, th = tw * 0.72f, edge = 3.0f * mm;
+     float cx = right - edge - tw * 0.5f;
+     float cy = bottom - edge - th * 0.5f;
+@@ -1419,28 +1421,15 @@ PresentationLayout current_presentation_layout(Backend* b, int* out_w, int* out_
+         layout = compute_adaptive_presentation_layout(drawable_w, drawable_h,
+                                                       b->base_w, b->base_h);
+     } else {
+-        // Pad-only titles: reserve roughly one fifth of the display on each
+-        // side for the controls. Prefer an exact integer multiple so pixel art
+-        // stays crisp and symmetric.
+-        const int width_limited_scale =
+-            static_cast<int>((drawable_w * 0.62f) / b->base_w);
+-        const int height_limited_scale =
+-            static_cast<int>((drawable_h * 0.90f) / b->base_h);
+-        const int integer_scale =
+-            std::max(1, std::min(width_limited_scale, height_limited_scale));
+-        int game_w = b->base_w * integer_scale;
+-        int game_h = b->base_h * integer_scale;
+-        int scale_out = integer_scale;
+-        if (game_w > drawable_w || game_h > drawable_h) {
+-            const float scale = std::min(
+-                static_cast<float>(drawable_w) / b->base_w,
+-                static_cast<float>(drawable_h) / b->base_h);
+-            game_w = std::max(1, static_cast<int>(b->base_w * scale));
+-            game_h = std::max(1, static_cast<int>(b->base_h * scale));
+-            scale_out = 0;
+-        }
+-        layout = {(drawable_w - game_w) / 2, (drawable_h - game_h) / 2,
+-                  game_w, game_h, scale_out};
++        // Fit the native image without stretching or reserving invisible pad
++        // rails. Controls use the remaining bands or overlay the image edges.
++        const auto& in = b->safe_insets;
++        const int safe_w = std::max(0, drawable_w - in.left - in.right);
++        const int safe_h = std::max(0, drawable_h - in.top - in.bottom);
++        layout = compute_presentation_layout(safe_w, safe_h,
++                                             b->base_w, b->base_h);
++        layout.x += in.left;
++        layout.y += in.top;
+     }
+ #else
+     PresentationLayout layout{};
+@@ -2520,7 +2509,7 @@ void HostWindow::configure_touch(bool policy, std::uint32_t claims,
+     if (!b->pad_choice_saved) {
+         const bool platform_default =
+ #if defined(__ANDROID__)
+-            true;
++            b->controller == nullptr;
+ #else
+             false;
+ #endif
+@@ -2745,12 +2734,23 @@ HostWindow::Events HostWindow::pump() {
+             ev.quit = true;
+         } else if (e.type == SDL_CONTROLLERDEVICEADDED) {
+             if (!b->controller) open_game_controller(b, e.cdevice.which);
++#if defined(__ANDROID__)
++            if (!b->pad_choice_saved && b->controller) {
++                b->pad_visible = false;
++                for (auto& touch : b->touches)
++                    if (touch.active && touch.pad) touch.buttons = 0;
++            }
++#endif
+         } else if (e.type == SDL_CONTROLLERDEVICEREMOVED) {
+             if (b->controller &&
+                 e.cdevice.which == b->controller_id) {
+                 close_game_controller(b);
+                 open_first_game_controller(b);
+             }
++#if defined(__ANDROID__)
++            if (!b->pad_choice_saved)
++                b->pad_visible = b->touch_controls && b->controller == nullptr;
++#endif
+         } else if (e.type == SDL_WINDOWEVENT &&
+                    e.window.event == SDL_WINDOWEVENT_CLOSE) {
+             ev.quit = true;
