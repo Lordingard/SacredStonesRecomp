@@ -1,0 +1,33 @@
+{
+  "$schema": "https://recomp.fyi/schema/v1.json",
+  "game": "Fire Emblem: The Sacred Stones",
+  "system": "GBA",
+  "type": "recomp",
+  "original": {
+    "region": "USA",
+    "sha1": "c25b145e37456171ada4b0d440bf88a19f4d509f"
+  },
+  "project": "SacredStonesRecomp",
+  "status": "released",
+  "targets": ["Windows", "Android"],
+  "toolchain": "Gbarecomp",
+  "approach": "Static GBA recompilation with a native hardware runtime and recomp-ui launcher.",
+  "maintainers": [
+    {
+      "name": "Lordingard",
+      "link": "https://github.com/Lordingard"
+    }
+  ],
+  "links": [
+    {
+      "label": "Releases",
+      "url": "https://github.com/Lordingard/SacredStonesRecomp/releases/latest"
+    },
+    {
+      "label": "Documentation",
+      "url": "https://github.com/Lordingard/SacredStonesRecomp#readme"
+    }
+  ],
+  "tags": ["gba", "tactical-rpg"],
+  "notes": "Windows x64 and Android ARM64 builds. In-game saves, save states and save export. Windows includes rewind, fast-forward and persistent fullscreen. Android includes touch/gamepad controls and automatic suspend/resume. AI-assisted development; maintainer-tested. Full-game testing remains incomplete."
+}
