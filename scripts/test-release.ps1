@@ -35,9 +35,9 @@ if ($DiagnosticCapture) {
     $scenarios += 'diagnostics'
     if ($WindowedInput) { $scenarios += 'window-diagnostics' }
 }
-if ($WindowedInput) { $scenarios += @('window-controls', 'window-controls-invalid', 'window-fullscreen', 'window-fullscreen-override') }
+if ($WindowedInput) { $scenarios += @('window-controls', 'window-controls-invalid', 'window-fullscreen', 'window-fullscreen-override', 'window-fullscreen-exclusive') }
 foreach ($scenario in $scenarios) {
-    $windowed = $scenario -in @('window-input', 'window-diagnostics', 'window-missing-controller', 'window-controls', 'window-controls-invalid', 'window-fullscreen', 'window-fullscreen-override')
+    $windowed = $scenario -in @('window-input', 'window-diagnostics', 'window-missing-controller', 'window-controls', 'window-controls-invalid', 'window-fullscreen', 'window-fullscreen-override', 'window-fullscreen-exclusive')
     $diagnostics = $scenario -in @('diagnostics', 'window-diagnostics')
     $frames = if ($scenario -eq 'input') { 3600 } else { 1200 }
     $defaultSave = Join-Path $testRoot 'saves/SacredStonesRecomp.sav'
@@ -53,9 +53,11 @@ foreach ($scenario in $scenarios) {
     $info = [Diagnostics.ProcessStartInfo]::new()
     $info.FileName = Join-Path $testRoot 'SacredStonesRecomp.exe'
     $info.WorkingDirectory = $testRoot
-    if ($scenario -in @('window-controls', 'window-controls-invalid', 'window-fullscreen', 'window-fullscreen-override')) {
+    if ($scenario -in @('window-controls', 'window-controls-invalid', 'window-fullscreen', 'window-fullscreen-override', 'window-fullscreen-exclusive')) {
         $controlsPath = Join-Path $testRoot 'runtime-controls.toml'
-        $content = if ($scenario -in @('window-fullscreen', 'window-fullscreen-override')) {
+        $content = if ($scenario -eq 'window-fullscreen-exclusive') {
+            "fullscreen = 2`n"
+        } elseif ($scenario -in @('window-fullscreen', 'window-fullscreen-override')) {
             "fullscreen = 1`n"
         } elseif ($scenario -eq 'window-controls') {
             "fast_forward_multiplier = 7`nrewind_enabled = false`nstate_slot = 8`nassist_tools_enabled = true`n"
@@ -175,7 +177,15 @@ foreach ($scenario in $scenarios) {
         if ($scenario -eq 'window-fullscreen-override' -and $log -notmatch 'runtime_fullscreen_loaded mode=0') {
             throw "Explicit windowed override did not take precedence. Log: $logPath"
         }
-        if ($scenario -in @('window-controls', 'window-controls-invalid', 'window-fullscreen', 'window-fullscreen-override') -and
+        if ($scenario -eq 'window-fullscreen-exclusive') {
+            $target = [regex]::Match($log, 'exclusive target=(\d+x\d+@\d+Hz)')
+            $actual = [regex]::Match($log, 'fullscreen-exclusive display=\d+ mode=(\d+x\d+@\d+Hz)')
+            if ($log -notmatch 'runtime_fullscreen_loaded mode=2' -or -not $target.Success -or
+                -not $actual.Success -or $target.Groups[1].Value -ne $actual.Groups[1].Value) {
+                throw "Exclusive fullscreen did not use the desktop display mode. Log: $logPath"
+            }
+        }
+        if ($scenario -in @('window-controls', 'window-controls-invalid', 'window-fullscreen', 'window-fullscreen-override', 'window-fullscreen-exclusive') -and
             (Get-FileHash -LiteralPath $controlsPath).Hash -ne $controlsHash) {
             throw "Loading controls unexpectedly modified the file. Log: $logPath"
         }

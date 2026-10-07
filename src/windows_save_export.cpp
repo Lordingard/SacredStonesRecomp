@@ -3,6 +3,8 @@
 #include <string>
 #include <windows.h>
 #include <commdlg.h>
+#include "native_dialog_window.h"
+#include <SDL_syswm.h>
 
 namespace {
 std::filesystem::path script_path, save_path, rom_path;
@@ -22,7 +24,14 @@ void configure_save_export(const std::filesystem::path& executable,
 
 int windows_menu_action(const char* key) {
     if (std::strcmp(key, "sacredstones.export_saves") != 0) return 0;
-    HWND owner = GetActiveWindow();
+    SDL_Window* window = SDL_GetKeyboardFocus();
+    if (!window) window = SDL_GetMouseFocus();
+    NativeDialogWindow dialog_window(window);
+    if (!dialog_window.ready()) return 1;
+    SDL_SysWMinfo info{};
+    SDL_VERSION(&info.version);
+    if (!SDL_GetWindowWMInfo(window, &info) || info.subsystem != SDL_SYSWM_WINDOWS) return 1;
+    HWND owner = info.info.win.window;
     wchar_t destination[32768] = L"SacredStonesRecomp-saves.zip";
     OPENFILENAMEW dialog{};
     dialog.lStructSize = sizeof(dialog);

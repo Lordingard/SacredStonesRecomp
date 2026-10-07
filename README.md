@@ -42,6 +42,7 @@ Working now:
 - Fast-forward speed from 2x to 10x and independently switchable rewind.
 - Remembered speed, rewind/Assist Tools enable switches, and selected state slot.
 - Remembered Windows fullscreen mode, shared by the launcher and in-game menu.
+- Native-resolution exclusive fullscreen and the same application icon as Android.
 - ZIP save export from the in-game menu on both platforms.
 - Xbox-compatible controller support through SDL.
 - User-provided GBA BIOS support for correct boot, timing, and interrupt behavior.
@@ -84,6 +85,9 @@ earlier versions. Automated checks cover boot, SRAM reload, save overrides,
 locked-file recovery, windowed input, diagnostics, and preference loading.
 The maintainer validated the new menu controls and corrected layout, alongside
 previous gameplay checks. This is not exhaustive start-to-finish coverage.
+For 0.1.13, the maintainer also confirmed borderless/exclusive fullscreen sizing
+and successful save export in exclusive fullscreen. Automated checks cover
+temporary windowed transitions and restoration after cancellation.
 
 ## What Static Recompilation Means Here
 
@@ -207,6 +211,8 @@ go back. Resume returns to gameplay.
   battery save, existing state slots 1-9, any suspend snapshot, and a manifest;
   it never contains your ROM or BIOS. Keep the supplied `tools/` folder beside
   the executable. Export uses Windows' built-in PowerShell; no install is needed.
+  In exclusive fullscreen, the game temporarily becomes windowed for the native
+  picker and confirmation, then restores fullscreen, including after cancellation.
 - Display/audio settings include fullscreen, window scale, filtering, volume,
   audio enable, and the FPS readout. Fullscreen is remembered; the other
   display/audio adjustments made in this menu are session settings.

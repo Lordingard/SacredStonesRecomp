@@ -1,6 +1,7 @@
 #include "runtime.h"
 #include "windows_save_export.h"
 #include "recomp_runtime_ui.h"
+#include <SDL.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -159,6 +160,10 @@ void force_exe_local_config(std::vector<std::string>& args) {
 }
 
 int main(int argc, char** argv) {
+#if defined(_WIN32)
+    SDL_SetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON, "101");
+    SDL_SetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL, "101");
+#endif
     gbarecomp::RunOptions opts{};
     opts.builtin_game_name = "Fire Emblem: The Sacred Stones";
     opts.builtin_rom_sha1 = "c25b145e37456171ada4b0d440bf88a19f4d509f";

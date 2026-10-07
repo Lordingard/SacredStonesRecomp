@@ -63,6 +63,8 @@ Copy-Item -LiteralPath (Join-Path $repoRoot "game.toml") -Destination (Join-Path
 Copy-Item -LiteralPath (Join-Path $repoRoot "README.md") -Destination (Join-Path $stageRoot "README.md") -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "docs/release.md") -Destination (Join-Path $stageRoot "RELEASE_NOTES.md") -Force
 
+& "$PSScriptRoot/../tests/windows_icon_test.ps1" -Executable (Join-Path $stageRoot 'SacredStonesRecomp.exe')
+
 & "$PSScriptRoot/test-release.ps1" -BuildDir $stageRoot -RomPath $RomPath -BiosPath $BiosPath -ExtendedInput -WindowedInput -DiagnosticCapture
 
 if (Test-Path -LiteralPath $zipPath) {

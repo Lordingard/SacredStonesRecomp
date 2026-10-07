@@ -67,6 +67,13 @@ add_executable(SacredStonesRecomp
     src/main.cpp
     src/windows_save_export.cpp
 )
+if(WIN32)
+    enable_language(RC)
+    configure_file(src/windows_resources.rc.in windows_resources.rc @ONLY)
+    target_sources(SacredStonesRecomp PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/windows_resources.rc")
+    set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/windows_resources.rc"
+        PROPERTIES OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/assets/game.ico")
+endif()
 target_link_libraries(SacredStonesRecomp PRIVATE comdlg32)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -122,6 +129,9 @@ target_include_directories(sacredstones_save_file_tests PRIVATE "${GBARECOMP_ROO
 
 if(MINGW)
     find_package(SDL2 REQUIRED)
+    add_executable(sacredstones_native_dialog_tests EXCLUDE_FROM_ALL tests/native_dialog_window_test.cpp)
+    target_include_directories(sacredstones_native_dialog_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    target_link_libraries(sacredstones_native_dialog_tests PRIVATE SDL2::SDL2)
     add_executable(sacredstones_launcher_policy_tests EXCLUDE_FROM_ALL
         tests/launcher_policy_test.cpp
         "${RECOMP_UI_ROOT}/src/common/launcher_model.c"

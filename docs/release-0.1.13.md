@@ -17,12 +17,17 @@ the ROM or GBA BIOS; provide your own legally obtained USA ROM and BIOS.
 - Borderless fullscreen is recommended. Windowed and exclusive modes remain
   available; an explicit command-line fullscreen mode overrides startup preferences.
 - Preserve the original 3:2 aspect ratio. Side bands on wider displays are normal.
+- Exclusive fullscreen explicitly uses the desktop resolution and refresh rate,
+  avoiding extra margins from a lower-resolution display mode.
+- The executable, launcher and game use the same Eirika icon as Android.
 - Add **Assist Tools > Export saves**, with a native ZIP destination picker.
   Flush the current battery save before exporting and pause gameplay during export.
 - Export the battery save, existing state slots 1-9, any suspend snapshot and
   backup manifest, never the ROM, BIOS or settings. Original saves remain intact.
 - Use Windows' built-in PowerShell export helper, included under `tools/`.
   Failed exports preserve an existing destination archive.
+- Temporarily switch exclusive fullscreen to windowed for the native picker
+  and confirmation, then restore exclusive mode even when export is cancelled.
 
 ## Android
 
@@ -40,19 +45,25 @@ do not uninstall or clear its data. Back up saves first and keep the ZIP separat
 Archive import is not implemented. Save-state compatibility across platforms or
 runtime versions is not guaranteed. Full-game testing remains incomplete.
 
-## Automated Validation
+## Validation
 
 - Regenerated Windows game/BIOS code with the recorded runtime revision;
   generation provenance matches dependency sources and inputs.
-- Fifteen isolated runtime scenarios pass, including SRAM reload, save paths,
+- Sixteen isolated runtime scenarios pass, including SRAM reload, save paths,
   locked-save recovery, input, diagnostics, preferences, remembered borderless
-  fullscreen and explicit windowed overrides.
+  fullscreen, explicit windowed overrides and native-resolution exclusive mode.
 - Save-file, launcher-policy and runtime-control test programs pass.
 - Windows PowerShell 5.1 export tests cover exact content, unchanged originals,
   state-only archives, slot 9, suspend snapshots, invalid/empty storage and locked ZIPs.
 - Package inspection verifies the executable at the ZIP root, current export
   helper and exclusion of private game files and player data.
+- Windows resource tests verify that the embedded icon matches the Android PNG
+  byte for byte and loads at 16, 32 and 256 pixels.
+- Native dialog transition tests cover windowed, borderless and exclusive modes,
+  restoration after cancellation and an owner window that is not minimized.
 - Android production signature verified; all ARM64 native libraries match 0.1.12.
 
-Manual Windows menu/export and fullscreen restart acceptance is still pending;
-these automated checks do not substitute for gameplay validation.
+The maintainer confirmed both fullscreen image sizes and successful save export
+in exclusive fullscreen. Cancellation/restoration is covered by the automated
+transition test; a separate manual cancellation test has not been reported.
+This is not exhaustive start-to-finish gameplay coverage.

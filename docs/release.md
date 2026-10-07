@@ -5,6 +5,13 @@
 - Align Windows and Android release numbers without merging their engine pins.
 - Remember Windows fullscreen changes from the launcher, menu and Alt+Enter.
   Prefer borderless; retain windowed and exclusive modes and explicit CLI overrides.
+- Use the desktop resolution and refresh rate in exclusive fullscreen instead
+  of choosing a lower display mode from the windowed size.
+- Embed the same Eirika icon as the Android APK in the Windows executable,
+  including the launcher and game windows.
+- Temporarily leave exclusive fullscreen for the export destination picker and
+  confirmation. Restore it on completion, cancellation or failure without
+  changing the remembered fullscreen preference.
 - Add Windows Assist Tools > Export saves with a native ZIP destination picker.
   Flush battery memory first, pause gameplay, and export only saves and a manifest.
 - Include the Windows PowerShell helper under tools; no additional install is needed.
@@ -13,6 +20,8 @@
   empty/invalid storage, locked destinations and unchanged original files.
 - Keep the Android 0.1.12 runtime unchanged and retain the production signing key.
 - Document fullscreen, export, package contents and update precautions.
+- Maintainer validated borderless/exclusive fullscreen sizing and save export
+  in exclusive fullscreen. Automated transition tests cover cancellation.
 
 ## v0.1.10 - 2026-10-05
 
