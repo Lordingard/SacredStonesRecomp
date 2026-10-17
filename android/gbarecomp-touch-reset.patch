@@ -1,0 +1,37 @@
+diff --git a/src/runtime/runtime.cpp b/src/runtime/runtime.cpp
+index c5de5ac..60d5d8d 100644
+--- a/src/runtime/runtime.cpp
++++ b/src/runtime/runtime.cpp
+@@ -2177,6 +2177,7 @@ int run_game(int argc, char** argv, const RunOptions& opts) {
+         // explicitly restart its already-registered source. The host bridge's
+         // already-queued native audio remains a separate future flush concern.
+         gba_mod_audio_on_savestate_load();
++        if (opts.input_reset) opts.input_reset();
+         sync_frame_counter();  // realign vblank_count with restored PPU
+         // Re-origin the fingerprint cycle clock + ring at the load point so the
+         // recomp and interp oracle share a cycle origin for diff_cycle_trace.py.
+@@ -2197,6 +2198,7 @@ int run_game(int argc, char** argv, const RunOptions& opts) {
+                                      make_snapshot_ctx(), &e)) {
+             return false;
+         }
++        if (opts.input_reset) opts.input_reset();
+         sync_frame_counter();
+         g_runtime_cycles = 0;
+         runtime_fp_reset();
+@@ -2327,6 +2329,7 @@ int run_game(int argc, char** argv, const RunOptions& opts) {
+         menu_open = runtime_ui_context.ui &&
+                     recomp_runtime_ui_is_open(runtime_ui_context.ui);
+ #endif
++        if ((touch_policy_suspended || menu_open) && opts.input_reset) opts.input_reset();
+         if (!touch_policy_suspended && !menu_open) {
+             const TouchPresentation p = hub.presentation();
+             TouchFrameInfo info;
+@@ -3324,6 +3327,8 @@ int run_game(int argc, char** argv, const RunOptions& opts) {
+         if (!args.window) return;
+         capture_rewind_point();
+         auto ev = win.pump();
++        if ((ev.enter_background || ev.terminating || ev.toggle_pause) && opts.input_reset)
++            opts.input_reset();
+         if (observer) {
+             // Observe-mode TCP savestate requests run here, at a present
+             // boundary on the guest thread.

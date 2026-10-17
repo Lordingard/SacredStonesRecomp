@@ -45,6 +45,9 @@ Working now:
 - Native-resolution exclusive fullscreen and the same application icon as Android.
 - ZIP save export from the in-game menu on both platforms.
 - Xbox-compatible controller support through SDL.
+- Optional direct mouse controls on Windows and direct touch controls on Android.
+- Pointer navigation for maps, actions, menus, dialogue, world-map destinations,
+  between-chapter saves and the Guide, including list/text scrolling.
 - User-provided GBA BIOS support for correct boot, timing, and interrupt behavior.
 - Quiet project builds: generated/framework warning noise is filtered from the
   normal build output.
@@ -60,6 +63,13 @@ on Pixel 9 Pro and accepted the display correction after three-device testing.
 Version 0.1.13 aligns the Windows and Android release numbers. Windows adds
 persistent fullscreen and ZIP save export; Android retains the validated 0.1.12
 game runtime and features. The two platforms keep independent dependency pins.
+
+Version 0.1.19 adds the direct mouse/touch controls described below. Maintainer
+testing covered the prologue, guided Trade, actions and menus; native snapshot
+tests additionally cover chapter saves, world-map selection/dialogue skip and
+Guide navigation. This is not a complete playthrough, and pointer controls
+remain experimental. Keyboard, virtual buttons and physical controllers remain
+available. Versions 0.1.14-0.1.18 were local test builds, not public releases.
 
 Known limitations:
 
@@ -109,7 +119,7 @@ The runtime validates the ROM SHA-1 and refuses unrecognized ROMs.
 
 ## Quick Start - Windows
 
-1. Download [SacredStonesRecomp-0.1.13-win64.zip](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.13/SacredStonesRecomp-0.1.13-win64.zip)
+1. Download [SacredStonesRecomp-0.1.19-win64.zip](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.19/SacredStonesRecomp-0.1.19-win64.zip)
    from the release's **Assets** section and extract it. The **Source code**
    archives are for developers, not the playable package.
 2. Run `SacredStonesRecomp.exe`.
@@ -128,7 +138,7 @@ the preference. Keyboard controls remain available.
 
 ## Quick Start - Android
 
-1. Download [SacredStonesRecomp-0.1.13-android-arm64.apk](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.13/SacredStonesRecomp-0.1.13-android-arm64.apk)
+1. Download [SacredStonesRecomp-0.1.19-android-arm64.apk](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.19/SacredStonesRecomp-0.1.19-android-arm64.apk)
    from the release's **Assets**, not the source-code archives.
 2. Open the APK on an ARM64 device running Android 9 or newer. Android may require
    permission to install from the browser or file manager you used.
@@ -191,6 +201,34 @@ Default assist bindings:
   controller.
 - Fast-forward: hold `2` on keyboard or the right trigger on an Xbox-compatible
   controller.
+
+## Direct Mouse And Touch Controls
+
+On Windows, enable **Mouse controls (experimental)** in the launcher's input
+settings or the in-game **Input** page. The choice is remembered across restarts.
+Android's **Direct touch controls (experimental)** option is enabled by default;
+change it from setup or the in-game **Input** page. It is also remembered when
+setup is skipped. Virtual buttons and physical controls remain usable.
+
+- Left-click or tap a map tile, unit or action to select it. Map selection is
+  immediate within the game's valid bounds; tutorial restrictions still apply.
+- Combat targets require a separate confirmation after selection so the forecast
+  can be checked. On the world map, select a destination, then click/tap again
+  to confirm if the first selection only moved the cursor.
+- Right-click goes back in menus, or acts as Start in skippable dialogue/scenes.
+  On Android, use a two-finger tap. Protected tutorial messages cannot be skipped.
+- Hover at an edge to pan a map independently of the selection cursor. On
+  Android, hold a finger near an edge briefly. Releasing an edge pan does not
+  select a tile. Scripted camera movement retains control when required.
+- Wheel over supported lists or scrollbars to scroll. On Android, swipe vertically
+  over that area. Guide categories, article lists and article text support this;
+  scrolling a list never opens an article. Click/tap an article to read it.
+- Chapter-save selection still needs an explicit Yes/No confirmation. Guide
+  Back/Sort badges and game menus are clickable/tappable.
+
+These controls adapt native game inputs rather than bypassing story flags,
+inventory rules or save code. For an unsupported screen, use the original
+controls and report it, preferably with a save state immediately before it.
 
 ## In-Game Menu - Windows
 

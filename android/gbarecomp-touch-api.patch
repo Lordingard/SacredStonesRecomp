@@ -1,0 +1,13 @@
+diff --git a/src/runtime/runtime.h b/src/runtime/runtime.h
+index d60ca8e..d638a89 100644
+--- a/src/runtime/runtime.h
++++ b/src/runtime/runtime.h
+@@ -147,6 +147,8 @@ struct RunOptions {
+     // established input path byte-identical. Suspended during input replay
+     // (the recorded trace already contains the composed keys).
+     std::uint16_t (*input_frame)(const TouchFrameInfo* frame) = nullptr;
++    // Discard game-owned input plans on pause, state restoration or replay.
++    void (*input_reset)() = nullptr;
+ 
+     // Gestures the game's policy owns (TouchClaim bits). An unclaimed
+     // long-press still opens the runtime settings menu; a three-finger tap

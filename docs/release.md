@@ -1,5 +1,23 @@
 # Release Notes
 
+## v0.1.19 - 2026-10-17
+
+- Add persistent, optional Windows mouse and Android direct-touch controls.
+- Support map selection, independent edge panning, actions and native menus.
+- Keep separate combat-target confirmation and native tutorial restrictions.
+- Add title/menu/dialogue navigation, world-map destination selection and Start
+  skipping, between-chapter save confirmation and the Guide.
+- Scroll supported lists and Guide text with the wheel or vertical touch swipes.
+- Preserve keyboard, virtual-button and physical-controller input ownership;
+  reset pending pointer input on menu, save-state, rewind and lifecycle changes.
+- Pin the Windows pointer API and launcher-toggle changes to project fork commits.
+  Android keeps its independent upstream pins and reviewed, hash-checked patches.
+- Preserve existing save storage, export, fullscreen and production signing key.
+- Add policy, trusted-hook, touch-gesture, SDL routing and native snapshot tests.
+- Document activation, gestures, confirmation and remaining full-game test limits.
+- Versions 0.1.14-0.1.18 were unpublished local validation builds.
+- See the GitHub v0.1.19 release details for downloads and update instructions.
+
 ## v0.1.13 - 2026-10-06
 
 - Align Windows and Android release numbers without merging their engine pins.

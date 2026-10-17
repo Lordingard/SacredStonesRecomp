@@ -29,5 +29,5 @@
     }
   ],
   "tags": ["gba", "tactical-rpg"],
-  "notes": "Windows x64 and Android ARM64 builds. In-game saves, save states and save export. Windows includes rewind, fast-forward and persistent fullscreen. Android includes touch/gamepad controls and automatic suspend/resume. AI-assisted development; maintainer-tested. Full-game testing remains incomplete."
+  "notes": "Windows x64 and Android ARM64 builds. Experimental direct mouse/touch controls for maps, menus, world-map selection and Guide navigation. In-game saves, save states and save export. Windows includes rewind, fast-forward and persistent fullscreen. Android includes virtual/physical gamepad controls and automatic suspend/resume. AI-assisted development; maintainer-tested. Full-game testing remains incomplete."
 }

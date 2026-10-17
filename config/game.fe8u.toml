@@ -1,6 +1,31 @@
 # Fire Emblem: The Sacred Stones (U) [!]
 # Reviewed annotations for GBARecomp static generation.
 
+[[mod_function_hook]]
+addr = 0x08015838
+mode = "thumb"
+note = "Optional instant mouse cursor placement; native movement/path validation is retained."
+
+[[mod_function_hook]]
+addr = 0x0801588C
+mode = "thumb"
+note = "Optional native mouse camera, replacing cursor-follow only."
+
+[[mod_function_hook]]
+addr = 0x08015A98
+mode = "thumb"
+note = "Hide offscreen map cursor while the native mouse camera is detached."
+
+[[mod_function_hook]]
+addr = 0x080B96F8
+mode = "thumb"
+note = "Optional world-map pointer cursor placement; native node and route validation retained."
+
+[[mod_function_hook]]
+addr = 0x080B9218
+mode = "thumb"
+note = "Optional detached world-map pointer camera during free destination selection only."
+
 [program]
 name = "Fire Emblem: The Sacred Stones (U)"
 id = "fe8u"

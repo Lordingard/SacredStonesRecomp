@@ -1,6 +1,8 @@
 #include "runtime.h"
 #include "windows_save_export.h"
+#include "map_pointer.h"
 #include "recomp_runtime_ui.h"
+#include "mouse_preferences.h"
 #include <SDL.h>
 
 #include <cstdio>
@@ -11,7 +13,9 @@
 #include <vector>
 
 #if defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #endif
 
@@ -20,6 +24,15 @@
 #endif
 
 namespace {
+std::filesystem::path mouse_config;
+int set_mouse_option(const char* key, int value) {
+    if (!sacredstones::map_pointer_set(key, value)) return 0;
+#if defined(_WIN32)
+    if (!mouse_config.empty() && !sacredstones::save_mouse_preference(mouse_config, value != 0))
+        std::fprintf(stderr, "mouse_preferences_save_failed error=%lu\n", GetLastError());
+#endif
+    return 1;
+}
 bool has_arg_with_value(const std::vector<std::string>& args, const char* name) {
     for (const std::string& arg : args) {
         if (arg == name) return true;
@@ -165,15 +178,26 @@ int main(int argc, char** argv) {
     SDL_SetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL, "101");
 #endif
     gbarecomp::RunOptions opts{};
+    if (!sacredstones::initialize_mouse_camera()) {
+        std::fprintf(stderr, "mouse camera hook registration failed\n");
+        return 1;
+    }
     opts.builtin_game_name = "Fire Emblem: The Sacred Stones";
     opts.builtin_rom_sha1 = "c25b145e37456171ada4b0d440bf88a19f4d509f";
     opts.mod_game_id = "sacred-stones-us";
     opts.freely_resizable_window = true;
     opts.remember_fullscreen = true;
-    const RecompRuntimeUiItem export_item{"sacredstones.export_saves", "Assist Tools",
-        "Export saves", "", RECOMP_RUNTIME_UI_ACTION, 0, 0, 0, nullptr, 0, nullptr};
-    opts.ui_extra_items = &export_item;
-    opts.ui_extra_item_count = 1;
+    const RecompRuntimeUiItem extra_items[] = {
+        {"sacredstones.export_saves", "Assist Tools",
+         "Export saves", "", RECOMP_RUNTIME_UI_ACTION, 0, 0, 0, nullptr, 0, nullptr},
+        {"sacredstones.mouse_map", "Input", "Mouse controls (experimental)", "",
+         RECOMP_RUNTIME_UI_BOOL, 0, 1, 1, nullptr, 0, nullptr}
+    };
+    opts.ui_extra_items = extra_items;
+    opts.ui_extra_item_count = 2;
+    opts.ui_get = sacredstones::map_pointer_get;
+    opts.ui_set = set_mouse_option;
+    opts.pointer_input = sacredstones::desktop_pointer_input;
     opts.ui_action = windows_menu_action;
     opts.show_fps_by_default = true;
     opts.expose_assist_tools = true;
@@ -188,6 +212,10 @@ int main(int argc, char** argv) {
 
     std::vector<std::string> args(argv, argv + argc);
     if (!args.empty()) args[0] = executable_path(args).string();
+#if defined(_WIN32)
+    mouse_config = executable_path(args).parent_path() / opts.launcher_config_filename;
+    sacredstones::map_pointer.enabled = sacredstones::load_mouse_preference(mouse_config);
+#endif
     force_fe8_save_type();
 
     bool explicit_save = false;

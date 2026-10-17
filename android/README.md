@@ -81,6 +81,42 @@ The Android build never reuses a Windows archive or Windows-generated corpus.
 
 ## Build
 
+The subsequent unpublished 0.1.15 test increment (version code 14) adds direct
+world-map location selection, native general/node menus and bounded world-map
+edge panning. It shares the Windows implementation. Unit and package checks
+passed; real world-map gameplay acceptance is still pending. See the touch
+prototype document below for the exact coverage and build evidence.
+
+### Direct Touch Prototype (2026-10-16)
+
+An unpublished, signed 0.1.14 test APK adds direct touchscreen controls using
+the same game-owned selection policy as the experimental Windows mouse mode.
+Enable **Direct touch controls (experimental)** in setup or the in-game Input
+menu. The setting defaults to on in this prototype and persists in app-private
+storage, including when setup is skipped. Virtual buttons and physical pads
+remain available; their touches never also select a map tile.
+
+Tap to select; tap the same combat target again to confirm after its preview.
+Tap with two fingers to send B. Hold a finger near an image edge to pan the
+map; releasing this hold does not select a tile. A vertical swipe scrolls the
+supported lists without activating their entries. Android Back and three-finger
+tap retain access to the settings menu. The pad visibility toggle is unchanged.
+
+The existing Android engine/UI pins are retained. Two small tracked engine
+patches add an optional game-input reset callback for menus, replay, lifecycle
+and save-state restoration. All eight engine patches applied to clean pinned
+source files with matching hashes. Game cursor/camera hooks are generated
+from the reviewed annotations, not copied from a Windows archive.
+
+The ARM64 debug and production-signed APKs built and passed package checks,
+including private-asset exclusion, certificate identity and 16 KiB alignment.
+Gesture recognizer/adapter, shared map/cursor policy, Android display/pad/menu
+and transition tests passed. Device acceptance is still pending: no device was
+connected during this implementation. See
+[touch prototype](../docs/touch-controls-prototype.md) for coverage limits.
+Build evidence: `build/android-direct-touch-build.log` and
+`build/android-direct-touch-signed.log`. This APK has not been published.
+
 Requirements: JDK 17, Android SDK platform 35, build-tools 35.0.0, NDK
 27.1.12297006, Android CMake 3.22.1, host CMake/Ninja/MinGW, Git, and Python.
 The script uses project-local tools under `build/android-tools` when present,

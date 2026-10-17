@@ -16,13 +16,16 @@ file(GLOB GAME_SHARDS CONFIGURE_DEPENDS
 if(NOT GAME_SHARDS)
     message(FATAL_ERROR "No generated game shards found.")
 endif()
-add_library(main SHARED main.cpp ${GAME_SHARDS}
+add_library(main SHARED main.cpp ../../src/map_pointer.cpp ../../src/map_camera.cpp
+    ../../src/touch_pointer.cpp ${GAME_SHARDS}
     "${SACREDSTONES_GENERATED_PROJECT}/generated/dispatch_table.cpp"
     "${SACREDSTONES_GENERATED_PROJECT}/generated/symbol_map.cpp")
 target_include_directories(main PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../src"
     "${SACREDSTONES_GENERATED_PROJECT}/framework/include"
     "${SACREDSTONES_GENERATED_PROJECT}/generated"
     "${GBARECOMP_ROOT}/src/runtime")
+target_compile_definitions(main PRIVATE SACREDSTONES_ANDROID_TOUCH)
 target_link_libraries(main PRIVATE "-Wl,--start-group"
     gbarecomp_runtime gbarecomp_debug gbarecomp_gba gbarecomp_armv4t
     "-Wl,--end-group")

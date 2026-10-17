@@ -3,6 +3,11 @@
 #include "launcher_seam.h"
 #include "host_window.h"
 #include "recomp_runtime_ui.h"
+#include "map_pointer.h"
+#include "touch_pointer.h"
+#include "runtime_bus_bridge.h"
+#include "gba_bus.h"
+#include <fstream>
 #include <SDL.h>
 #include <jni.h>
 #include <cstring>
@@ -14,6 +19,41 @@
 #include <vector>
 
 namespace {
+sacredstones::TouchPointer touch_pointer;
+void reset_touch_input() {
+    gbarecomp::TouchHub::instance().cancel_all(gbarecomp::touch_clock_ms());
+    touch_pointer.reset();
+    sacredstones::PointerInput input;
+    input.reset = true;
+    sacredstones::map_pointer_input(input);
+}
+int mobile_menu_get(const char* key, int* value) {
+    if (std::strcmp(key, "sacredstones.touch_map")) return 0;
+    *value = sacredstones::map_pointer.enabled ? 1 : 0;
+    return 1;
+}
+int mobile_menu_set(const char* key, int value) {
+    if (std::strcmp(key, "sacredstones.touch_map")) return 0;
+    std::ofstream file("touch-controls.cfg.tmp", std::ios::binary | std::ios::trunc);
+    file.put(value ? '1' : '0'); file.close();
+    if (!file || std::rename("touch-controls.cfg.tmp", "touch-controls.cfg")) {
+        std::fprintf(stderr, "touch_preferences_save_failed\n"); return 0;
+    }
+    reset_touch_input();
+    sacredstones::map_pointer.enabled = value != 0;
+    gbarecomp::TouchHub::instance().set_claims(value ?
+        gbarecomp::kTouchClaimTap | gbarecomp::kTouchClaimLongPress |
+        gbarecomp::kTouchClaimTwoFingerTap | gbarecomp::kTouchClaimSwipe : 0);
+    return 1;
+}
+std::uint16_t mobile_touch_input(const gbarecomp::TouchFrameInfo* frame) {
+    auto* bus = gbarecomp::active_bus();
+    if (!frame || !bus) { reset_touch_input(); return 0x3ff; }
+    auto input = touch_pointer.translate(*frame);
+    input.ewram = bus->ewram_ptr(); input.ewram_size = 256 * 1024;
+    input.iwram = bus->iwram_ptr(); input.iwram_size = 32 * 1024;
+    return static_cast<std::uint16_t>(0x3ff & ~sacredstones::map_pointer_input(input));
+}
 int mobile_menu_action(const char* key) {
     if (std::strcmp(key, "sacredstones.export_saves") != 0) return 0;
     auto* env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
@@ -31,7 +71,9 @@ int mobile_menu_action(const char* key) {
 
 const RecompRuntimeUiItem mobile_items[] = {
     {"sacredstones.export_saves", "Assist Tools", "Export saves", "",
-     RECOMP_RUNTIME_UI_ACTION, 0, 0, 0, nullptr, 0, nullptr}
+     RECOMP_RUNTIME_UI_ACTION, 0, 0, 0, nullptr, 0, nullptr},
+    {"sacredstones.touch_map", "Input", "Direct touch controls (experimental)", "",
+     RECOMP_RUNTIME_UI_BOOL, 0, 1, 1, nullptr, 0, nullptr}
 };
 
 int run_sacred_stones(int argc, char** argv) {
@@ -40,6 +82,9 @@ int run_sacred_stones(int argc, char** argv) {
     mobile.game_config = "variants/sacred_stones/game.toml";
     mobile.program_name = "./SacredStonesRecomp";
     if (!gbarecomp::mobile_prepare_process(args, mobile)) return 1;
+    if (!sacredstones::initialize_mouse_camera()) return 1;
+    std::ifstream preference("touch-controls.cfg", std::ios::binary);
+    sacredstones::map_pointer.enabled = !preference.is_open() || preference.get() == '1';
 
     // Keep FE8's reviewed SRAM policy independent of setup/config propagation.
     setenv("GBARECOMP_SAVE_TYPE", "sram", 1);
@@ -64,8 +109,15 @@ int run_sacred_stones(int argc, char** argv) {
     opts.rewind_history_seconds = 30;
     opts.resume_suspend_state_on_launch = true;
     opts.ui_extra_items = mobile_items;
-    opts.ui_extra_item_count = 1;
+    opts.ui_extra_item_count = 2;
     opts.ui_action = mobile_menu_action;
+    opts.ui_get = mobile_menu_get;
+    opts.ui_set = mobile_menu_set;
+    opts.input_frame = mobile_touch_input;
+    opts.input_reset = reset_touch_input;
+    opts.touch_gesture_claims = sacredstones::map_pointer.enabled ?
+        gbarecomp::kTouchClaimTap | gbarecomp::kTouchClaimLongPress |
+        gbarecomp::kTouchClaimTwoFingerTap | gbarecomp::kTouchClaimSwipe : 0;
 
     // The shared mobile bootstrap adds --no-launcher. The launcher seam owns
     // that flag and must consume it before the runtime's strict CLI parser.

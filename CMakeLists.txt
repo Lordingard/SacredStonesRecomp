@@ -65,6 +65,8 @@ set_target_properties(sacredstones_generated PROPERTIES
 
 add_executable(SacredStonesRecomp
     src/main.cpp
+    src/map_pointer.cpp
+    src/map_camera.cpp
     src/windows_save_export.cpp
 )
 if(WIN32)
@@ -122,6 +124,23 @@ if(COMMAND gbarecomp_stage_mingw_runtime)
 endif()
 
 add_executable(sacredstones_save_file_tests EXCLUDE_FROM_ALL tests/save_file_test.cpp)
+add_executable(sacredstones_map_pointer_tests EXCLUDE_FROM_ALL
+    tests/map_pointer_test.cpp src/map_pointer.cpp)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/build/android-deps/gbarecomp/src/runtime/touch_input.h")
+    add_executable(sacredstones_touch_pointer_tests EXCLUDE_FROM_ALL
+        tests/touch_pointer_test.cpp src/touch_pointer.cpp src/map_pointer.cpp
+        "${CMAKE_CURRENT_SOURCE_DIR}/build/android-deps/gbarecomp/src/runtime/touch_input.cpp")
+    target_compile_definitions(sacredstones_touch_pointer_tests PRIVATE SACREDSTONES_ANDROID_TOUCH)
+    target_include_directories(sacredstones_touch_pointer_tests PRIVATE src
+        "${CMAKE_CURRENT_SOURCE_DIR}/build/android-deps/gbarecomp/src/runtime")
+endif()
+add_executable(sacredstones_map_camera_tests EXCLUDE_FROM_ALL
+    tests/map_camera_test.cpp src/map_pointer.cpp src/map_camera.cpp
+    "${GBARECOMP_ROOT}/src/runtime/mod_function_hooks.cpp")
+target_include_directories(sacredstones_map_camera_tests PRIVATE
+    src "${GBARECOMP_ROOT}/src/runtime" "${GBARECOMP_ROOT}/src/armv4t")
+target_include_directories(sacredstones_map_pointer_tests PRIVATE
+    src "${GBARECOMP_ROOT}/src/runtime" "${GBARECOMP_ROOT}/src/debug")
 add_executable(sacredstones_runtime_controls_tests EXCLUDE_FROM_ALL tests/runtime_controls_test.cpp)
 target_include_directories(sacredstones_runtime_controls_tests PRIVATE "${GBARECOMP_ROOT}/src/runtime")
 target_link_libraries(sacredstones_runtime_controls_tests PRIVATE gbarecomp_runtime_preferences)
@@ -129,6 +148,21 @@ target_include_directories(sacredstones_save_file_tests PRIVATE "${GBARECOMP_ROO
 
 if(MINGW)
     find_package(SDL2 REQUIRED)
+    add_executable(sacredstones_mouse_game_tests EXCLUDE_FROM_ALL
+        tests/mouse_game_test.cpp src/map_pointer.cpp src/map_camera.cpp)
+    target_include_directories(sacredstones_mouse_game_tests PRIVATE src)
+    get_target_property(_mouse_test_links SacredStonesRecomp LINK_LIBRARIES)
+    target_link_libraries(sacredstones_mouse_game_tests PRIVATE ${_mouse_test_links})
+    recomp_target_launcher_ui(sacredstones_mouse_game_tests CONSOLE gba)
+    target_compile_options(sacredstones_mouse_game_tests PRIVATE
+        $<$<COMPILE_LANGUAGE:C>:-Wno-stringop-overflow>)
+    add_executable(sacredstones_pointer_host_tests EXCLUDE_FROM_ALL
+        tests/pointer_host_test.cpp
+        "${GBARECOMP_ROOT}/src/runtime/host_window.cpp"
+        "${GBARECOMP_ROOT}/src/runtime/color_lut.cpp")
+    target_compile_definitions(sacredstones_pointer_host_tests PRIVATE SDL_MAIN_HANDLED GBARECOMP_HAVE_SDL2)
+    target_include_directories(sacredstones_pointer_host_tests PRIVATE "${GBARECOMP_ROOT}/src/runtime")
+    target_link_libraries(sacredstones_pointer_host_tests PRIVATE SDL2::SDL2 dwmapi winmm)
     add_executable(sacredstones_native_dialog_tests EXCLUDE_FROM_ALL tests/native_dialog_window_test.cpp)
     target_include_directories(sacredstones_native_dialog_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
     target_link_libraries(sacredstones_native_dialog_tests PRIVATE SDL2::SDL2)
