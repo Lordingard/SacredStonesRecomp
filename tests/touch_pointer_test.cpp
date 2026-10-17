@@ -83,16 +83,35 @@ int main() {
     check(touch.translate(frame).reset, "physical and virtual GBA keys take priority");
     frame.host_keyinput = 0x3ff; frame.point_count = 2;
     check(touch.translate(frame).reset, "multitouch cancels pending single-finger input");
+    TouchPointSnapshot remaining;
+    remaining.start_view_x = 100; remaining.start_view_y = 80; remaining.view_x = 80; remaining.view_y = 70;
+    remaining.moved = true;
+    frame.points = &remaining; frame.point_count = 1;
+    input = touch.translate(frame);
+    check(input.reset && !input.dragging, "remaining finger after multitouch cannot resume drag");
+    frame.point_count = 0; touch.translate(frame);
     TouchPointSnapshot point;
     point.view_x = 235; point.view_y = 80; point.down_ms = 100;
     frame.points = &point; frame.point_count = 1; frame.host_ms = 219;
     check(touch.translate(frame).hover_x == -1, "short edge tap does not pan");
     frame.host_ms = 220; input = touch.translate(frame);
-    check(input.hover_x == 235 && !input.pointer_down && !input.primary, "edge hold pans without selecting");
-    frame.point_count = 0; g.kind = GestureKind::Tap; g.view_x = 235; frame.gesture_count = 1;
-    check(!touch.translate(frame).primary, "releasing edge pan never selects underlying tile");
-    touch.reset();
-    check(touch.translate(frame).primary, "fresh edge tap remains selectable after reset");
+    check(input.hover_x == -1 && input.pointer_down && !input.primary, "stationary edge hold no longer pans on mobile");
+    point.start_view_x = 120; point.start_view_y = 80; point.view_x = 100; point.view_y = 70; point.moved = true;
+    ++frame.frame_count; input = touch.translate(frame);
+    check(input.drag_start && input.dragging && input.drag_dx == 20 && input.drag_dy == 10 && !input.primary,
+          "drag begins in image center and content follows finger");
+    point.view_x = 90.25f; point.view_y = 65.5f; ++frame.frame_count; input = touch.translate(frame);
+    check(!input.drag_start && input.drag_dx == 9 && input.drag_dy == 4, "drag motion is incremental");
+    point.view_x = 90; point.view_y = 65; ++frame.frame_count; input = touch.translate(frame);
+    check(input.drag_dx == 1 && input.drag_dy == 1, "fractional drag pixels survive across frames");
+    frame.point_count = 0; g.kind = GestureKind::DragEnd; g.pointer = point.pointer;
+    g.start_view_x = 120; g.start_view_y = 80; g.view_x = 90; g.view_y = 65; frame.gesture_count = 1;
+    ++frame.frame_count; input = touch.translate(frame);
+    check(input.dragging && !input.primary && input.drag_dx == 0, "drag release never becomes a tile selection");
+    g.kind = GestureKind::DragMove; g.view_x = 80; ++frame.frame_count;
+    check(!touch.translate(frame).dragging, "orphan move after release cannot resume drag");
+    g.kind = GestureKind::Tap; g.view_x = 56; g.view_y = 72; ++frame.frame_count;
+    check(touch.translate(frame).primary, "fresh tap after drag remains selectable");
     // Exercise the pinned engine's recognizer, not only handcrafted gestures.
     GestureRecognizer recognizer;
     std::vector<Gesture> gestures;
@@ -116,5 +135,28 @@ int main() {
     gestures.clear(); event.phase = TouchPhase::Up; event.t_ms = 450;
     recognizer.on_event(event, gestures);
     check(gestures.empty(), "release after menu/state reset cannot become a new tap");
-    std::puts("PASS: touch translation, native map selection, cancellation, edge hold, swipe and ownership");
+    event.phase = TouchPhase::Down; event.pointer = 1; event.t_ms = 500;
+    event.view_x = 120; event.view_y = 80; event.drawable_x = 480; event.drawable_y = 320;
+    recognizer.on_event(event, gestures);
+    event.phase = TouchPhase::Move; event.t_ms = 520;
+    event.view_x = 100; event.view_y = 70; event.drawable_x = 400; event.drawable_y = 280;
+    recognizer.on_event(event, gestures);
+    std::vector<TouchPointSnapshot> points; recognizer.snapshot(points);
+    frame.points = points.data(); frame.point_count = points.size();
+    frame.gestures = gestures.data(); frame.gesture_count = gestures.size(); ++frame.frame_count;
+    input = touch.translate(frame);
+    check(input.drag_start && input.drag_dx == 20 && input.drag_dy == 10 && !input.primary,
+          "real engine DragBegin reaches production touch policy");
+    pointer.cancel(); put(0x02001000, 0x0859aad8, 4); put(0x0200100c, 0x0801c941, 4);
+    put(0x0202bcd8, 272, 2); put(0x0202bcda, 352, 2);
+    input.ewram = ram.data(); input.ewram_size = ram.size(); input.iwram = iwram.data(); input.iwram_size = iwram.size();
+    const auto drag_before = ram;
+    check(pointer.update(input) == 0 && ram == drag_before, "real drag requests camera movement without modifying game state");
+    int camera_x, camera_y;
+    check(pointer.camera_position(camera_x, camera_y) && camera_x == 20 && camera_y == 10,
+          "real center drag acquires bounded map camera");
+    gestures.clear(); event.phase = TouchPhase::Up; event.t_ms = 550; recognizer.on_event(event, gestures);
+    frame.point_count = 0; frame.gestures = gestures.data(); frame.gesture_count = gestures.size(); ++frame.frame_count;
+    check(!touch.translate(frame).primary, "real DragEnd and Swipe cannot become an attack tap");
+    std::puts("PASS: touch translation, native selection, drag camera, cancellation, swipe and ownership");
 }

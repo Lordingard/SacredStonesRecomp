@@ -1,5 +1,18 @@
 # Release Notes
 
+## v0.1.20 - 2026-10-18
+
+- Fix mouse/touch selection of grey inventory rows in a unit's Item menu;
+  keep disabled action commands unavailable and separate action confirmation.
+- Drag anywhere on a free battle/world map on Android to pan with your finger,
+  replacing stationary edge holds. Windows mouse edge scrolling is unchanged.
+- Keep camera bounds, tutorial restrictions, physical-input ownership and
+  list/Guide scrolling; releasing a map drag never selects or confirms a tile.
+- Add regression coverage for item actions, incremental/fractional drags,
+  cancellation, multitouch and map/world limits.
+- Preserve save storage, BIOS requirements and the Android production signer.
+- Pointer controls remain experimental; full-game/device coverage is incomplete.
+
 ## v0.1.19 - 2026-10-17
 
 - Add persistent, optional Windows mouse and Android direct-touch controls.

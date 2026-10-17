@@ -1,7 +1,7 @@
 # Mouse Map Controls Prototype (Windows)
 
-This experimental prototype is disabled by default and is not part of a public
-release yet. Enable **Mouse controls (experimental)** in the launcher's Player 1
+Direct mouse controls were released in 0.1.19 and remain disabled by default.
+This document also retains historical prototype notes. Enable **Mouse controls (experimental)** in the launcher's Player 1
 panel or **Controller > Configure**. The same switch is available in the in-game
 menu (Escape) under **Input**. The choice is remembered in the executable-local
 `sacredstonesrecomp.ini`, section `[Mouse]`, key `enabled` (0/1), even when the
@@ -388,6 +388,22 @@ Manual acceptance before enabling by default or publishing:
 
 Development executable: `build/runner-mingw/SacredStonesRecomp.exe`.
 The stable release packages were not replaced and no release was published.
+
+### Item Inventory Selection (0.1.20)
+
+- Native unit Item inventory entries can be grey but still open their action
+  submenu. Pointer selection now accepts that availability only for
+  `gItemSelectMenuDef`. Disabled commands elsewhere remain rejected.
+- From the supplied state1, all three inventory rows were grey. Native input
+  selected the second item, waited in its action submenu, explicitly chose
+  Equip, verified the equipped slot, then returned through Back. The adapter
+  never wrote inventory data or command availability.
+  Evidence: `build/validation/mouse-item-a9e00273d54e4d5db41ce1fa4194d8a9/`.
+  The run stayed fully static. Tests also cover hidden/disabled entries,
+  read-only input and preventing inherited submenu confirmation.
+- Six boot/save regressions passed:
+  `build/validation/5d10433b57da43ebaacb773d6603adce/`.
+  Windows mouse edge scrolling is unchanged. Included in release 0.1.20.
 
 ### Guide Navigation (2026-10-17)
 

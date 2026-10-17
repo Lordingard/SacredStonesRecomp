@@ -17,7 +17,7 @@ struct Fixture {
     std::array<std::uint8_t, 256 * 1024> ram{};
     std::array<std::uint8_t, 32 * 1024> iwram{};
     sacredstones::MapPointer pointer;
-    gbarecomp::GamePointerInput input;
+    sacredstones::PointerInput input;
     static constexpr unsigned bm = 0x0202bcb0, proc = 0x02001000;
     Fixture() {
         pointer.enabled = true;
@@ -334,6 +334,51 @@ int main(int argc, char** argv) {
                                                         "menu confirms clicked row only once"); }
     { Fixture f; f.menu(); f.put(0x02002000 + 0x80 + 0x3d, 2, 1);
       require(f.click(24, 48) == 0, "disabled action cannot be clicked"); }
+    { Fixture f; f.menu(); f.put(Fixture::proc + 0x30, 0x0859d184, 4);
+      f.put(0x02002000 + 0x3d, 2, 1); const auto before = f.ram;
+      require(f.click(24, 32) == 1, "grey Item inventory entry opens native action submenu");
+      require(f.ram == before, "grey inventory selection never changes items or availability");
+      f.put(Fixture::proc + 0x30, 0x0859d118, 4);
+      require(f.next_pulse() == 0, "inventory click cannot carry into action submenu");
+      ++f.input.frame; require(f.click(24, 32) == 0, "grey Use/Equip command remains disabled"); }
+    { Fixture f; f.menu(); f.put(Fixture::proc + 0x30, 0x0859d184, 4);
+      f.put(0x02002000 + 0x3d, 3, 1);
+      require(f.click(24, 32) == 0, "hidden inventory entry is never selectable"); }
+    { Fixture f; const auto before = f.ram; const auto internal = f.iwram;
+      f.input.dragging = f.input.drag_start = f.input.pointer_down = true;
+      f.input.drag_dx = 20; f.input.drag_dy = 10;
+      require(f.pointer.update(f.input) == 0, "map drag moves camera without buttons");
+      int x, y; require(f.pointer.camera_position(x, y) && x == 20 && y == 10, "map drag starts anywhere in image");
+      require(f.ram == before && f.iwram == internal, "map drag policy never writes cursor or units");
+      require(f.pointer.update(f.input) == 0 && f.pointer.camera_position(x, y) && x == 20,
+              "same-frame drag is not accumulated twice");
+      f.input.drag_start = false; f.input.drag_dx = 3; f.input.drag_dy = -4;
+      require(f.tick() == 0 && f.pointer.camera_position(x, y) && x == 23 && y == 6, "map drag accumulates before native hook catches up");
+      f.input.dragging = f.input.pointer_down = false;
+      require(f.tick() == 0 && f.pointer.camera_position(x, y) && x == 23 && y == 6, "drag release never selects or recenters"); }
+    { Fixture f; f.click(100, 72); f.input.dragging = f.input.drag_start = f.input.pointer_down = true;
+      f.input.drag_dx = 25;
+      require(f.tick() == 0, "new drag cancels queued tile selection");
+      int x, y; std::uint32_t p, mode;
+      require(!f.pointer.cursor_jump(x, y, p, mode), "drag cannot retain a pending cursor jump"); }
+    { Fixture f; f.input.dragging = f.input.pointer_down = true; f.input.drag_dx = 20;
+      int x, y; require(f.pointer.update(f.input) == 0 && !f.pointer.camera_position(x, y), "orphan drag cannot acquire map camera"); }
+    { Fixture f; f.input.dragging = f.input.drag_start = f.input.pointer_down = true; f.input.drag_dx = 20;
+      f.pointer.update(f.input); f.input.drag_start = false; f.input.reset = true; f.tick();
+      f.input.reset = false; int x, y;
+      require(f.tick() == 0 && !f.pointer.camera_position(x, y), "state/menu reset cancels ownership until a fresh drag"); }
+    for (unsigned mode : {0x0801c941u, 0x0801d819u}) {
+      Fixture f; f.put(Fixture::proc + 0xc, mode, 4);
+      if (mode == 0x0801c941) f.put(0x03000010, 0xf0, 2);
+      f.input.dragging = f.input.drag_start = f.input.pointer_down = true; f.input.drag_dx = 20;
+      int x, y; require(f.pointer.update(f.input) == 0 && !f.pointer.camera_position(x, y), "drag preserves scripted tutorial restrictions"); }
+    { Fixture f; f.world(); f.input.dragging = f.input.drag_start = f.input.pointer_down = true;
+      f.input.drag_dx = 400; f.input.drag_dy = 300; int x, y; std::uint32_t p;
+      require(f.pointer.update(f.input) == 0 && f.pointer.world_camera_position(x, y, p) && x == 240 && y == 160,
+              "world-map drag uses independent bounded pixel camera"); }
+    { Fixture f; f.menu(); f.click(24, 64);
+      f.input.dragging = f.input.drag_start = f.input.pointer_down = true;
+      require(f.next_pulse() == 0, "dragging a menu cannot finish an older click plan"); }
     { Fixture f; f.menu(); require(f.click(100, 48) == 0 && f.click(24, 0) == 0,
                                   "outside menu rows never leaks into map"); }
     { Fixture f; f.menu(); f.put(Fixture::proc + 0x63, 0x40, 1);

@@ -1,6 +1,6 @@
 # Direct Touch Controls Prototype
 
-Android ARM64, unpublished test build 0.1.14 (version code 13), 2026-10-16.
+Android ARM64, direct-touch controls released in 0.1.19; updated in 0.1.20.
 
 ## Controls
 
@@ -9,11 +9,11 @@ Android ARM64, unpublished test build 0.1.14 (version code 13), 2026-10-16.
 - Tap a map tile, action, item or supported menu row to select it.
 - The 0.1.15 test increment adds world-map locations and general/node menus.
   Tap a location to select it through the native travel/route handler; tap
-  empty map space for the general menu. Edge hold pans the world-map camera.
+  empty map space for the general menu. Drag to pan the world-map camera.
 - An attack/other unit-target action requires a separate tap on its previewed
   target. The weapon-selection tap cannot immediately execute the attack.
 - Tap with two fingers inside the image to send B (return/cancel).
-- Hold one finger near an image edge for at least 120 ms to pan the map.
+- Drag one finger anywhere on a free battle/world map to pan the camera.
   Release without selecting the tile underneath. Tutorial direction restrictions
   and scene ownership still govern whether panning is allowed.
 - Swipe vertically to scroll supported lists (Options, Unit list, Sound Room).
@@ -152,3 +152,27 @@ The shared policy preserves the world-map destination and dialogue-skip fixes.
 Touch policy tests and two native Windows snapshot Guide scenarios passed;
 see [mouse validation](mouse-controls-prototype.md). Android device acceptance
 remains pending. Install over the existing app without uninstalling.
+
+## Drag To Pan And Item Inventory (0.1.20)
+
+Production-signed APK: `dist/android/SacredStonesRecomp-0.1.20-android-arm64.apk`
+(version code 19). Install over the existing app without uninstalling.
+
+Drag a finger anywhere on a free battle/world map to move the content with it.
+This replaces Android's stationary edge hold; Windows mouse edge pan is unchanged.
+Movement is incremental, bounded and independent of unit selection. Fractional
+pixels accumulate; release never selects or confirms. Dragging cancels pending
+selection plans. Physical controls, multitouch, native scene/tutorial restrictions
+and state/menu resets retain ownership. Remaining fingers after multitouch must
+all lift before panning can resume. Existing engine drag recognition is claimed.
+
+Vertical list/Guide swipes still scroll lists rather than moving the map.
+Tests exercise real DragBegin/DragEnd, center-origin and fractional movement,
+stationary edges, cancellation and read-only camera requests. Policy/hook tests
+cover map/world limits, stale gestures, physical input and scripted restrictions.
+Android device acceptance remains pending.
+
+The shared Item fix opens native actions for grey inventory entries without
+enabling grey Use/Equip commands. A native Windows snapshot run verified item
+selection, separate Equip confirmation and the resulting inventory; see
+[mouse validation](mouse-controls-prototype.md).

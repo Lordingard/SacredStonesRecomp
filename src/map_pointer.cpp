@@ -265,12 +265,19 @@ std::uint32_t menu_item(const Ram& ram, std::uint32_t p, int index) {
     return ram.contains(item, 0x3e) ? item : 0;
 }
 
+// Grey inventory entries can still open native item actions. Other
+// disabled commands retain their rejection policy.
+bool menu_selectable(const Ram& ram, std::uint32_t menu, std::uint32_t item) {
+    const auto availability = ram.read(item + 0x3d, 1);
+    return availability == 1 || (availability == 2 && ram.read(menu + 0x30, 4) == 0x0859d184);
+}
+
 int menu_hit(const Ram& ram, std::uint32_t p, int x, int y) {
     if (!valid_menu(ram, p)) return -1;
     const int right = (ram.s8(p + 0x2c) + ram.s8(p + 0x2e) - 1) * 8;
     for (unsigned i = 0; i < ram.read(p + 0x60, 1); ++i) {
         const auto item = menu_item(ram, p, i);
-        if (!item || ram.read(item + 0x3d, 1) != 1) continue;
+        if (!item || !menu_selectable(ram, p, item)) continue;
         const int left = ram.s16(item + 0x2a) * 8;
         const int top = ram.s16(item + 0x2c) * 8;
         if (x >= left && x < right && y >= top && y < top + 16) return int(i);
@@ -351,6 +358,7 @@ void MapPointer::cancel() {
     preview_token_ = 0;
     detached_camera_ = false;
     jump_pending_ = false;
+    drag_owned_ = false;
     screen_ready_ = 0;
 }
 
@@ -404,12 +412,31 @@ std::uint16_t MapPointer::update(const PointerInput& input) {
     proc_ = proc; mode_ = mode; identity_ = context.identity;
     last_frame_ = input.frame;
 
+    if (!input.pointer_down && !input.dragging) drag_owned_ = false;
+    if (input.dragging && context.kind != Kind::Map && context.kind != Kind::World) {
+        const bool held = output_ != 0;
+        cancel(); release_ = held;
+    }
+
     if (context.kind == Kind::World) {
         const int camera_x = ram.s16(kWorldData + 2), camera_y = ram.s16(kWorldData + 4);
         const auto cx = ram.read(kWorldData + 8, 4), cy = ram.read(kWorldData + 12, 4);
         const auto ignored = ram.read(0x03000010, 2);
         if (camera_x < 0 || camera_x > 240 || camera_y < 0 || camera_y > 160 ||
             cx > (479u << 8) || cy > (319u << 8)) { cancel(); return 0; }
+        if (input.dragging) {
+            if (!new_frame) return 0;
+            const bool owned = drag_owned_ || input.drag_start;
+            const int origin_x = detached_camera_ ? camera_x_ : camera_x;
+            const int origin_y = detached_camera_ ? camera_y_ : camera_y;
+            cancel();
+            if (!owned || (ignored & 0xf0)) return 0;
+            drag_owned_ = true;
+            camera_x_ = std::clamp(origin_x + std::clamp(input.drag_dx, -480, 480), 0, 240);
+            camera_y_ = std::clamp(origin_y + std::clamp(input.drag_dy, -320, 320), 0, 160);
+            detached_camera_ = true;
+            return 0;
+        }
         if (input.secondary) {
             cancel(); if (ignored & 2) return 0;
             cancel_pending_ = true; started_ = input.frame;
@@ -837,7 +864,7 @@ std::uint16_t MapPointer::update(const PointerInput& input) {
         if (cancel_pending_) { output_ = 2; cancel_pending_ = false; }
         else if (context.kind == Kind::Menu) {
             const auto item = menu_item(ram, proc, target_x_);
-            if (!item || item != target_token_ || ram.read(item + 0x3d, 1) != 1) { cancel(); return 0; }
+            if (!item || item != target_token_ || !menu_selectable(ram, proc, item)) { cancel(); return 0; }
             const int current = int(ram.read(proc + 0x61, 1));
             output_ = current < target_x_ ? 0x80 : current > target_x_ ? 0x40 : 1;
             // Opening a menu can clear newKeys before heldKeys observes the
@@ -873,6 +900,21 @@ std::uint16_t MapPointer::update(const PointerInput& input) {
     if (width <= 0 || height <= 0 || width > 64 || height > 64 ||
         cx < 0 || cy < 0 || cx >= width || cy >= height || camera_x < 0 || camera_y < 0) {
         cancel(); return 0;
+    }
+    if (input.dragging) {
+        if (!new_frame) return 0;
+        const bool owned = drag_owned_ || input.drag_start;
+        const int origin_x = detached_camera_ ? camera_x_ : camera_x;
+        const int origin_y = detached_camera_ ? camera_y_ : camera_y;
+        cancel();
+        if (!owned || mode == kForcedMove || (ignored & 0xf0)) return 0;
+        drag_owned_ = true;
+        const int max_x = std::min(std::max(0, width * 16 - 240), std::max(0, ram.s16(kBm + 0x28)));
+        const int max_y = std::min(std::max(0, height * 16 - 160), std::max(0, ram.s16(kBm + 0x2a)));
+        camera_x_ = std::clamp(origin_x + std::clamp(input.drag_dx, -480, 480), 0, max_x);
+        camera_y_ = std::clamp(origin_y + std::clamp(input.drag_dy, -320, 320), 0, max_y);
+        detached_camera_ = true;
+        return 0;
     }
     if (input.secondary) {
         if (mode == kForcedMove || (ignored & 2)) { cancel(); return 0; }

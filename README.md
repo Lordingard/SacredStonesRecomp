@@ -71,6 +71,10 @@ Guide navigation. This is not a complete playthrough, and pointer controls
 remain experimental. Keyboard, virtual buttons and physical controllers remain
 available. Versions 0.1.14-0.1.18 were local test builds, not public releases.
 
+Version 0.1.20 fixes unit Item inventory selection with mouse/touch controls and
+adds finger-drag camera panning anywhere on free battle/world maps on Android.
+Windows mouse edge scrolling and list/Guide scrolling are unchanged.
+
 Known limitations:
 
 - Packaged targets are Windows x64 and Android ARM64 (Android 9 or newer).
@@ -119,7 +123,7 @@ The runtime validates the ROM SHA-1 and refuses unrecognized ROMs.
 
 ## Quick Start - Windows
 
-1. Download [SacredStonesRecomp-0.1.19-win64.zip](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.19/SacredStonesRecomp-0.1.19-win64.zip)
+1. Download [SacredStonesRecomp-0.1.20-win64.zip](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.20/SacredStonesRecomp-0.1.20-win64.zip)
    from the release's **Assets** section and extract it. The **Source code**
    archives are for developers, not the playable package.
 2. Run `SacredStonesRecomp.exe`.
@@ -138,7 +142,7 @@ the preference. Keyboard controls remain available.
 
 ## Quick Start - Android
 
-1. Download [SacredStonesRecomp-0.1.19-android-arm64.apk](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.19/SacredStonesRecomp-0.1.19-android-arm64.apk)
+1. Download [SacredStonesRecomp-0.1.20-android-arm64.apk](https://github.com/Lordingard/SacredStonesRecomp/releases/download/v0.1.20/SacredStonesRecomp-0.1.20-android-arm64.apk)
    from the release's **Assets**, not the source-code archives.
 2. Open the APK on an ARM64 device running Android 9 or newer. Android may require
    permission to install from the browser or file manager you used.
@@ -218,7 +222,7 @@ setup is skipped. Virtual buttons and physical controls remain usable.
 - Right-click goes back in menus, or acts as Start in skippable dialogue/scenes.
   On Android, use a two-finger tap. Protected tutorial messages cannot be skipped.
 - Hover at an edge to pan a map independently of the selection cursor. On
-  Android, hold a finger near an edge briefly. Releasing an edge pan does not
+  Android, drag anywhere on the map to move it with your finger. Releasing does not
   select a tile. Scripted camera movement retains control when required.
 - Wheel over supported lists or scrollbars to scroll. On Android, swipe vertically
   over that area. Guide categories, article lists and article text support this;

@@ -14,6 +14,8 @@ struct PointerInput {
     std::uint16_t physical_keys = 0x03ff;
     int x = -1, y = -1, hover_x = -1, hover_y = -1;
     bool pointer_down = false, primary = false, secondary = false, reset = false;
+    int drag_dx = 0, drag_dy = 0;
+    bool dragging = false, drag_start = false;
     PointerInput() = default;
     template<class T> PointerInput(const T& in)
         : frame(in.frame), ewram(in.ewram), ewram_size(in.ewram_size),

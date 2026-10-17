@@ -27,6 +27,7 @@ private:
     std::uint32_t preview_token_ = 0;
     bool detached_camera_ = false;
     bool jump_pending_ = false;
+    bool drag_owned_ = false;
     int camera_x_ = 0;
     int camera_y_ = 0;
     int target_x_ = 0;

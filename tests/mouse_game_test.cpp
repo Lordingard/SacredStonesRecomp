@@ -6,6 +6,7 @@
 #include <algorithm>
 #include "runtime_bus_bridge.h"
 #include "gba_bus.h"
+#include "runtime_arm.h"
 
 namespace {
 unsigned samples = 0;
@@ -25,6 +26,8 @@ unsigned trade_states_seen = 0;
 std::uint32_t world_event = 0;
 bool world_start_sent = false;
 unsigned guide_entry_target = 0;
+std::uint32_t item_unit = 0;
+unsigned item_value = 0;
 std::uint64_t intro_clicked = 0;
 std::uint64_t menu_frame = ~std::uint64_t{0};
 std::uint64_t save_before = 0;
@@ -76,6 +79,7 @@ std::uint16_t menu_probe(const gbarecomp::GamePointerInput& source) {
     const bool world_mode = std::strncmp(menu_mode, "world", 5) == 0;
     const bool world_skip = std::strcmp(menu_mode, "world-skip") == 0;
     const bool guide_mode = std::strncmp(menu_mode, "guide", 5) == 0;
+    const bool item_mode = std::strcmp(menu_mode, "item") == 0;
     const unsigned guide_category = std::strcmp(menu_mode, "guide-list") == 0 ? 0u : 1u;
     const bool chapter_save = std::strncmp(menu_mode, "chapter-save", 12) == 0;
     const bool save_no = std::strcmp(menu_mode, "chapter-save-no") == 0;
@@ -108,6 +112,38 @@ std::uint16_t menu_probe(const gbarecomp::GamePointerInput& source) {
                 } else if (save_no && !p && source.frame >= intro_clicked + 16) {
                     failed = save_before != save_checksum(); menu_stage = failed ? -1 : 99;
                 }
+            }
+        } else if (item_mode) {
+            const auto menu = find(0x0804f164);
+            const auto def = menu ? read(menu + 0x30, 4) : 0;
+            if (menu && samples >= 30 && source.frame >= intro_clicked + 24) {
+                if (!menu_stage && def == 0x0859d184 && source.iwram && source.iwram_size >= 0x4e54) {
+                    const auto* ptr = source.iwram + 0x4e50;
+                    item_unit = unsigned(ptr[0]) | (unsigned(ptr[1]) << 8) | (unsigned(ptr[2]) << 16) | (unsigned(ptr[3]) << 24);
+                    const auto entry = read(menu + 0x38, 4);
+                    item_value = read(item_unit + 0x20, 2);
+                    failed |= !item_value || read(entry + 0x3d) != 2;
+                    click(int(read(entry + 0x2a, 2)) * 8 + 24, int(read(entry + 0x2c, 2)) * 8 + 4);
+                    menu_stage = 1;
+                } else if (menu_stage == 1 && def == 0x0859d118) {
+                    menu_stage = 2;
+                } else if (menu_stage == 2 && def == 0x0859d118) {
+                    failed |= read(item_unit + 0x20, 2) != item_value;
+                    bool found = false;
+                    for (unsigned i = 0; i < read(menu + 0x60); ++i) {
+                        const auto entry = read(menu + 0x34 + i * 4, 4), command = read(entry + 0x30, 4);
+                        if (read(entry + 0x3d) == 1 && (bus_read_u32(command + 0x14) & ~1u) == 0x080237f8) {
+                            click(int(read(entry + 0x2a, 2)) * 8 + 4, int(read(entry + 0x2c, 2)) * 8 + 4);
+                            found = true; break;
+                        }
+                    }
+                    failed |= !found; menu_stage = found ? 3 : -1;
+                } else if (menu_stage == 3 && def == 0x0859d184) {
+                    failed |= read(item_unit + 0x1e, 2) != item_value;
+                    std::printf("item_native equipped=%04x expected=%04x explicit_confirmation=1\n", read(item_unit + 0x1e, 2), item_value);
+                    click(20, 20, true); menu_stage = 4;
+                } else if (menu_stage == 4 && def != 0x0859d184 && def != 0x0859d118) menu_stage = failed ? -1 : 99;
+                intro_clicked = source.frame;
             }
         } else if (guide_mode) {
             const auto guide = find(0x080cefd4);
@@ -414,7 +450,7 @@ int main(int argc, char** argv) {
     options.builtin_rom_sha1 = "c25b145e37456171ada4b0d440bf88a19f4d509f";
     options.freely_resizable_window = true;
     options.pointer_input = input_probe;
-    if (menu_mode && (std::strncmp(menu_mode, "chapter-save", 12) == 0 || std::strncmp(menu_mode, "trade-tutorial", 14) == 0 || std::strncmp(menu_mode, "world", 5) == 0 || std::strncmp(menu_mode, "guide", 5) == 0)) {
+    if (menu_mode && (std::strncmp(menu_mode, "chapter-save", 12) == 0 || std::strncmp(menu_mode, "trade-tutorial", 14) == 0 || std::strncmp(menu_mode, "world", 5) == 0 || std::strncmp(menu_mode, "guide", 5) == 0 || std::strcmp(menu_mode, "item") == 0)) {
         options.pointer_input = nullptr;
         options.extended_view_frame = chapter_frame_probe;
     }

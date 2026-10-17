@@ -43,7 +43,7 @@ int mobile_menu_set(const char* key, int value) {
     sacredstones::map_pointer.enabled = value != 0;
     gbarecomp::TouchHub::instance().set_claims(value ?
         gbarecomp::kTouchClaimTap | gbarecomp::kTouchClaimLongPress |
-        gbarecomp::kTouchClaimTwoFingerTap | gbarecomp::kTouchClaimSwipe : 0);
+        gbarecomp::kTouchClaimTwoFingerTap | gbarecomp::kTouchClaimSwipe | gbarecomp::kTouchClaimDrag : 0);
     return 1;
 }
 std::uint16_t mobile_touch_input(const gbarecomp::TouchFrameInfo* frame) {
@@ -117,7 +117,7 @@ int run_sacred_stones(int argc, char** argv) {
     opts.input_reset = reset_touch_input;
     opts.touch_gesture_claims = sacredstones::map_pointer.enabled ?
         gbarecomp::kTouchClaimTap | gbarecomp::kTouchClaimLongPress |
-        gbarecomp::kTouchClaimTwoFingerTap | gbarecomp::kTouchClaimSwipe : 0;
+        gbarecomp::kTouchClaimTwoFingerTap | gbarecomp::kTouchClaimSwipe | gbarecomp::kTouchClaimDrag : 0;
 
     // The shared mobile bootstrap adds --no-launcher. The launcher seam owns
     // that flag and must consume it before the runtime's strict CLI parser.
